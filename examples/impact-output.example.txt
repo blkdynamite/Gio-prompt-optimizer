@@ -1,0 +1,32 @@
+Example output of `python3 scripts/impact.py` after a month of heavy use.
+Your real numbers come from your own Claude Code logs.
+
+============================================================
+  Gio — Your Coding Impact
+============================================================
+  Logs scanned: 1 session file(s)
+
+  USAGE (actual)
+    Input tokens   : 2,000,000
+    Output tokens  : 600,000
+    Cache reads    : 15,000,000
+    Spent          : $41.88
+    Energy         : 1.225 kWh
+    Water          : 1.16 L
+    CO2            : 0.490 kg
+
+  SAVED vs naive baseline (2.5x input)
+    Money          : $204.38
+    Energy         : 1.387 kWh (~114 phone charges, ~139 h of an LED bulb)
+    Water          : 1.32 L (~5 glasses)
+    CO2            : 0.555 kg (~1.4 miles not driven)
+
+  ********************************************************
+  MILESTONE! You've now saved $200.00+
+  by querying efficiently. Money in your pocket and a
+  lighter footprint on the planet. Keep it up!
+  ********************************************************
+
+  Figures are estimates from public 2025-2026 data; see
+  README.md for sources and methodology.
+============================================================
