@@ -21,12 +21,20 @@ A static index drifts the moment code changes, and an agent that trusts a stale
 map will be confidently wrong. So the map is a **pointer, never the source of
 truth**:
 
-1. **Map** — consult the map to find the file and line range for what you need.
+1. **Map** — find the file and line range for what you need. For a single symbol,
+   prefer `--find SYMBOL` (returns just the `file:line` slice, no whole-map load —
+   the cheapest path); skim `CODEBASE_MAP.md` when you need the broader layout.
 2. **Verify** — `Read` exactly that span (`offset`/`limit`) to confirm the code
    still matches the map before you reason about or change it.
 3. **Heal** — if the span doesn't match (symbol moved/renamed/gone), fall back to
    `Grep` for the symbol, and regenerate the map (`python3
    scripts/codebase_map.py`) so the next lookup is correct.
+
+> **Token note:** on a *small* repo, reading the whole `CODEBASE_MAP.md` can cost
+> more than just grepping — measured at ~11% worse than plain search. `--find`
+> avoids that by returning only the matching locations, and the map's advantage
+> grows with codebase size. Reach for `--find` first; skim the full map only when
+> you genuinely need the layout.
 
 This keeps the token win of "don't re-scan the repo" while staying safe against
 staleness, because you always read ground truth before acting.
@@ -43,14 +51,20 @@ staleness, because you always read ground truth before acting.
 ## Generating and checking
 
 ```bash
-python3 scripts/codebase_map.py            # write CODEBASE_MAP.md + .codebase-map.json
-python3 scripts/codebase_map.py --root .   # map a specific directory
-python3 scripts/codebase_map.py --check    # report drift vs the stored map; exit 1 if stale
-python3 scripts/codebase_map.py --stdout   # print the Markdown map without writing files
-python3 scripts/codebase_map.py --json     # machine-readable map to stdout
-python3 scripts/codebase_map.py --engine ast   # force an engine
+python3 scripts/codebase_map.py                 # write CODEBASE_MAP.md + .codebase-map.json
+python3 scripts/codebase_map.py --find cost_usd # just the file:line of a symbol (cheapest lookup)
+python3 scripts/codebase_map.py --root .        # map a specific directory
+python3 scripts/codebase_map.py --check         # report drift vs the stored map; exit 1 if stale
+python3 scripts/codebase_map.py --stdout        # print the Markdown map without writing files
+python3 scripts/codebase_map.py --json          # machine-readable map to stdout
+python3 scripts/codebase_map.py --engine ast    # force an engine
 python3 scripts/codebase_map.py --help
 ```
+
+`--find` matches functions, classes, methods (by basename), and module-level
+constants — exact matches first, then case-insensitive substring. It reads the
+stored `.codebase-map.json` (building one in memory if absent), so the result is
+a few lines an agent can act on immediately.
 
 `--check` exits non-zero on drift, so it doubles as a pre-commit / CI guard:
 *"is the committed map still accurate?"*

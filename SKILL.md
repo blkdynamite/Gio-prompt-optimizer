@@ -180,10 +180,12 @@ with line ranges — so you jump straight to the right place instead of
 re-discovering the layout every task. It turns Part 1's "locate before you read"
 from a per-task search into a one-time index lookup.
 
-- **Read the map first** on any task in an unfamiliar or large repo, instead of
-  fanning out search agents just to learn the structure. Then **map-then-verify**:
-  `Read` the exact line span the map points to and confirm it still matches
-  before acting — the map is a pointer, never the source of truth.
+- **Locate, then verify.** For a single symbol use `--find SYMBOL` (returns just
+  the `file:line`); skim `CODEBASE_MAP.md` when you need the broader layout. Then
+  **map-then-verify**: `Read` the exact line span and confirm it still matches
+  before acting — the map is a pointer, never the source of truth. (On a small
+  repo, reading the whole map can cost more than grepping; `--find` avoids that,
+  and the map's edge grows with codebase size.)
 - **Regenerate when code moves** (new files, renames, refactors). `--check` reports
   drift and exits non-zero, so it works as a pre-commit / CI freshness guard.
 - **Zero hard dependencies**: stdlib `ast` (Python) + Markdown headings always
@@ -191,10 +193,11 @@ from a per-task search into a one-time index lookup.
   they're installed.
 
 ```bash
-python3 scripts/codebase_map.py            # write CODEBASE_MAP.md + .codebase-map.json
-python3 scripts/codebase_map.py --check    # report drift vs the stored map (exit 1 if stale)
-python3 scripts/codebase_map.py --stdout   # print the map without writing files
-python3 scripts/codebase_map.py --help     # all flags
+python3 scripts/codebase_map.py                 # write CODEBASE_MAP.md + .codebase-map.json
+python3 scripts/codebase_map.py --find cost_usd # just the file:line of a symbol (cheapest lookup)
+python3 scripts/codebase_map.py --check         # report drift vs the stored map (exit 1 if stale)
+python3 scripts/codebase_map.py --stdout        # print the map without writing files
+python3 scripts/codebase_map.py --help          # all flags
 ```
 
 Full protocol, tiers, and tuning: **`references/codebase-map.md`**.

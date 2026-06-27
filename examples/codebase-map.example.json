@@ -18,6 +18,7 @@
       "purpose": "impact.py — Gio's impact calculator.",
       "engine": "ast",
       "symbols": [
+        {"name": "DEFAULT_BASELINE_MULTIPLIER", "kind": "constant", "line_start": 69, "line_end": 69},
         {"name": "cost_usd", "kind": "function", "line_start": 152, "line_end": 159},
         {"name": "compute", "kind": "function", "line_start": 172, "line_end": 227},
         {"name": "main", "kind": "function", "line_start": 296, "line_end": 350}

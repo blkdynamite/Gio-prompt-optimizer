@@ -200,6 +200,22 @@ def extract_ast(text: str):
                     visit(child, prefix=child.name + ".")
 
     visit(tree)
+
+    # Module-level UPPER_CASE constants — high-value navigation targets that
+    # `--find` should be able to resolve (e.g. config/pricing constants).
+    for node in tree.body:
+        targets = []
+        if isinstance(node, ast.Assign):
+            targets = [t for t in node.targets if isinstance(t, ast.Name)]
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            targets = [node.target]
+        for t in targets:
+            if t.id.isupper():
+                syms.append({
+                    "name": t.id, "kind": "constant",
+                    "line_start": node.lineno,
+                    "line_end": getattr(node, "end_lineno", node.lineno),
+                })
     return syms
 
 
@@ -508,6 +524,41 @@ def check_staleness(root: Path):
     }
 
 
+def find_symbol(root: Path, query: str, limit: int):
+    """Return compact locations for a symbol without loading the whole map.
+
+    Prefers the stored .codebase-map.json (cheap); falls back to building the
+    map in memory if none exists. Exact name (or method basename) matches win;
+    otherwise case-insensitive substring matches. The point is a tiny result an
+    agent can act on: locate -> Read that span -> verify.
+    """
+    m = None
+    try:
+        m = json.loads((root / JSON_FILENAME).read_text())
+    except (OSError, json.JSONDecodeError):
+        m = None
+    built = m is None
+    if m is None:
+        m = build_map(root, "auto", DEFAULT_MAX_SYMBOLS_PER_FILE)
+
+    q = query.lower()
+    exact, partial = [], []
+    for f in m["files"]:
+        for s in f["symbols"]:
+            name = s["name"]
+            base = name.split(".")[-1]
+            hit = {"path": f["path"], "name": name, "kind": s["kind"],
+                   "line_start": s["line_start"], "line_end": s["line_end"]}
+            if name == query or base == query:
+                exact.append(hit)
+            elif q in name.lower():
+                partial.append(hit)
+
+    hits = (exact or partial)[:limit]
+    return {"query": query, "from_stored_map": not built,
+            "exact": bool(exact), "match_count": len(hits), "matches": hits}
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(
         description="Generate a labeled, regenerable codebase map (map-then-verify).")
@@ -520,6 +571,9 @@ def main(argv=None):
                    default=DEFAULT_MAX_SYMBOLS_PER_FILE,
                    help=f"Cap symbols shown per file in the Markdown view "
                         f"(default: {DEFAULT_MAX_SYMBOLS_PER_FILE})")
+    p.add_argument("--find", metavar="SYMBOL",
+                   help="Print just the file:line location(s) of a symbol "
+                        "(uses the stored map; no whole-map load)")
     p.add_argument("--check", action="store_true",
                    help="Report staleness vs the existing map; exit 1 on drift")
     p.add_argument("--stdout", action="store_true",
@@ -533,6 +587,22 @@ def main(argv=None):
         msg = f"Not a directory: {root}"
         print(json.dumps({"error": msg}) if args.json else msg, file=sys.stderr)
         return 1
+
+    if args.find:
+        res = find_symbol(root, args.find, limit=50)
+        if args.json:
+            print(json.dumps(res, indent=2))
+        elif not res["matches"]:
+            print(f"No symbol matching '{args.find}'. Try `--check` (the map may "
+                  "be stale) or Grep as a fallback.", file=sys.stderr)
+            return 1
+        else:
+            for h in res["matches"]:
+                span = (f"L{h['line_start']}"
+                        if h["line_start"] == h["line_end"]
+                        else f"L{h['line_start']}-L{h['line_end']}")
+                print(f"{h['path']}:{span}  {h['kind']}  {h['name']}")
+        return 0 if res["matches"] else 1
 
     if args.check:
         drift, report = check_staleness(root)

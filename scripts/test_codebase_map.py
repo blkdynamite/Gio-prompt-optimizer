@@ -27,6 +27,9 @@ PY_FIXTURE = '''\
 
 More detail."""
 
+MAX_THING = 42
+lowercase_var = 1
+
 
 def top_level(a, b):
     return a + b
@@ -73,6 +76,13 @@ class TestAstExtraction(unittest.TestCase):
             self.assertLessEqual(s["line_start"], s["line_end"])
         self.assertLess(by_name["Widget"]["line_start"],
                         by_name["Widget.method_one"]["line_start"])
+
+    def test_module_level_constants_captured(self):
+        by_name = {s["name"]: s for s in cm.extract_ast(PY_FIXTURE)}
+        self.assertIn("MAX_THING", by_name)
+        self.assertEqual(by_name["MAX_THING"]["kind"], "constant")
+        # lowercase module vars are not treated as navigation constants
+        self.assertNotIn("lowercase_var", by_name)
 
     def test_purpose_is_first_docstring_line(self):
         self.assertEqual(cm.file_purpose_python(PY_FIXTURE),
@@ -180,6 +190,53 @@ class TestStaleness(unittest.TestCase):
         drift, report = cm.check_staleness(root)
         self.assertTrue(drift)
         self.assertIn("error", report)
+
+
+class TestFindSymbol(unittest.TestCase):
+    def _make_repo_with_map(self):
+        root = Path(tempfile.mkdtemp())
+        (root / "a.py").write_text(PY_FIXTURE)
+        m = cm.build_map(root, "auto", cm.DEFAULT_MAX_SYMBOLS_PER_FILE)
+        (root / cm.JSON_FILENAME).write_text(json.dumps(m))
+        return root
+
+    def test_exact_function_match(self):
+        root = self._make_repo_with_map()
+        res = cm.find_symbol(root, "top_level", limit=50)
+        self.assertTrue(res["from_stored_map"])
+        self.assertTrue(res["exact"])
+        self.assertEqual(res["matches"][0]["path"], "a.py")
+        self.assertEqual(res["matches"][0]["kind"], "function")
+
+    def test_constant_lookup(self):
+        root = self._make_repo_with_map()
+        res = cm.find_symbol(root, "MAX_THING", limit=50)
+        self.assertTrue(res["exact"])
+        self.assertEqual(res["matches"][0]["kind"], "constant")
+
+    def test_method_basename_match(self):
+        root = self._make_repo_with_map()
+        res = cm.find_symbol(root, "method_one", limit=50)
+        self.assertTrue(res["exact"])
+        self.assertEqual(res["matches"][0]["name"], "Widget.method_one")
+
+    def test_substring_when_no_exact(self):
+        root = self._make_repo_with_map()
+        res = cm.find_symbol(root, "method", limit=50)
+        self.assertFalse(res["exact"])
+        self.assertEqual(res["match_count"], 2)  # method_one + method_two
+
+    def test_miss_returns_empty(self):
+        root = self._make_repo_with_map()
+        res = cm.find_symbol(root, "no_such_symbol", limit=50)
+        self.assertEqual(res["matches"], [])
+
+    def test_builds_in_memory_without_stored_map(self):
+        root = Path(tempfile.mkdtemp())
+        (root / "a.py").write_text(PY_FIXTURE)
+        res = cm.find_symbol(root, "top_level", limit=50)
+        self.assertFalse(res["from_stored_map"])
+        self.assertTrue(res["exact"])
 
 
 class TestImpactCostMath(unittest.TestCase):
