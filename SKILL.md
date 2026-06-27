@@ -11,7 +11,9 @@ description: >-
   a project clear and maintainable, track decisions, or see how much money and
   environmental impact their efficient habits have saved. Includes an impact
   calculator that reads real usage logs and reports money/energy/water/CO2
-  saved at milestones.
+  saved at milestones, and a codebase-map generator that builds a labeled,
+  regenerable index so agents jump straight to the right file and lines
+  (map-then-verify) instead of re-scanning the project each task.
 ---
 
 # Gio — your vibe-coding sidekick
@@ -25,7 +27,7 @@ Tokens are the unit of cost, latency, **and** environmental footprint
 (datacenter energy + cooling water), so trimming wasted tokens helps the wallet
 and the planet at once.
 
-Gio has five parts:
+Gio has six parts:
 
 1. **Token-reduction playbook** — habits to keep each query lean (below).
 2. **Impact calculator** — `scripts/impact.py`: reads real usage logs and, at
@@ -36,6 +38,8 @@ Gio has five parts:
    low-hanging-fruit mistakes → `references/code-quality.md`.
 5. **Code review process** — a six-phase loop before merging →
    `references/code-review.md`.
+6. **Codebase map** — `scripts/codebase_map.py`: a labeled, regenerable index
+   the agent consults (map-then-verify) → `references/codebase-map.md`.
 
 Read the linked reference file when a task calls for that part; the summaries
 below say when.
@@ -166,3 +170,31 @@ run the six-phase loop:
 
 Skip for one-liners, docs, and pure dependency bumps. Full detail and checklist:
 **`references/code-review.md`**.
+
+---
+
+## Part 6 — Codebase map
+
+A labeled, regenerable index of the repo — module → file → purpose → key symbols
+with line ranges — so you jump straight to the right place instead of
+re-discovering the layout every task. It turns Part 1's "locate before you read"
+from a per-task search into a one-time index lookup.
+
+- **Read the map first** on any task in an unfamiliar or large repo, instead of
+  fanning out search agents just to learn the structure. Then **map-then-verify**:
+  `Read` the exact line span the map points to and confirm it still matches
+  before acting — the map is a pointer, never the source of truth.
+- **Regenerate when code moves** (new files, renames, refactors). `--check` reports
+  drift and exits non-zero, so it works as a pre-commit / CI freshness guard.
+- **Zero hard dependencies**: stdlib `ast` (Python) + Markdown headings always
+  work; it auto-uses tree-sitter or universal-ctags for more languages when
+  they're installed.
+
+```bash
+python3 scripts/codebase_map.py            # write CODEBASE_MAP.md + .codebase-map.json
+python3 scripts/codebase_map.py --check    # report drift vs the stored map (exit 1 if stale)
+python3 scripts/codebase_map.py --stdout   # print the map without writing files
+python3 scripts/codebase_map.py --help     # all flags
+```
+
+Full protocol, tiers, and tuning: **`references/codebase-map.md`**.

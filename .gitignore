@@ -1,0 +1,7 @@
+# Gio codebase-map outputs (regenerable; run scripts/codebase_map.py)
+.codebase-map.json
+CODEBASE_MAP.md
+
+# Python
+__pycache__/
+*.pyc

@@ -92,6 +92,7 @@ before I merge."*
 | 🧠 **Remembers decisions** | Keeps a simple `DECISIONS.md` log so choices are tracked and never re-argued. |
 | 🧹 **Keeps code clean** | Reuses code instead of duplicating it, fixes root causes (not patches), and tidies as it goes. |
 | ✅ **Reviews before you ship** | A six-phase check for bugs, security, and architecture before anything merges. |
+| 🗺️ **Maps your codebase** | Builds a labeled, regenerable index (`python3 scripts/codebase_map.py`) so it jumps straight to the right file and lines instead of re-scanning the whole project. |
 
 Each part has a short guide in [`references/`](references/); the full playbook
 Claude follows is in [`SKILL.md`](SKILL.md).
