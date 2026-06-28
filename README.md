@@ -22,7 +22,7 @@ Building with AI is amazing — but it's easy to:
   this way.
 - 🐛 **Ship bugs** — no review step before things go live.
 
-Gio fixes all four — and shows you the money and the carbon you saved doing it.
+Gio fixes all four — and estimates the money and carbon you saved doing it.
 
 ---
 
@@ -39,16 +39,17 @@ Ask Gio *"how much have I saved?"* and you get this:
     Energy         : 1.225 kWh
     Water          : 1.16 L
 
-  SAVED vs naive baseline (2.5x input)
-    Money          : $204.38
+  ESTIMATED SAVINGS vs a naive baseline (2.5x input)
+    (modeled, not measured)
+    Money          : ~$204.38
     Energy         : 1.387 kWh (~114 phone charges)
     Water          : 1.32 L (~5 glasses)
     CO2            : 0.555 kg (~1.4 miles not driven)
 
   ********************************************************
-  MILESTONE! You've now saved $200.00+
-  by querying efficiently. Money in your pocket and a
-  lighter footprint on the planet. Keep it up!
+  MILESTONE! ~$200.00+ estimated savings
+  vs a naive workflow — money likely kept in your pocket
+  and a lighter footprint. An estimate, but keep it up!
   ********************************************************
 ```
 
@@ -92,6 +93,7 @@ before I merge."*
 | 🧠 **Remembers decisions** | Keeps a simple `DECISIONS.md` log so choices are tracked and never re-argued. |
 | 🧹 **Keeps code clean** | Reuses code instead of duplicating it, fixes root causes (not patches), and tidies as it goes. |
 | ✅ **Reviews before you ship** | A six-phase check for bugs, security, and architecture before anything merges. |
+| 🗺️ **Maps your codebase** | Builds a labeled, regenerable index (`python3 scripts/codebase_map.py`) so it jumps straight to the right file and lines instead of re-scanning the whole project. |
 
 Each part has a short guide in [`references/`](references/); the full playbook
 Claude follows is in [`SKILL.md`](SKILL.md).

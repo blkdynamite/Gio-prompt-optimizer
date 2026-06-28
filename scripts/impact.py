@@ -264,8 +264,10 @@ def human_report(r, files_read, baseline_multiplier, milestone_hit):
     lines.append(f"    Water          : {a['water_ml']/1000:.2f} L")
     lines.append(f"    CO2            : {a['co2_g']/1000:.3f} kg")
     lines.append("")
-    lines.append(f"  SAVED vs naive baseline ({baseline_multiplier}x input)")
-    lines.append(f"    Money          : {fmt_money(r['saved_cost'])}")
+    lines.append(f"  ESTIMATED SAVINGS vs a naive baseline ({baseline_multiplier}x input)")
+    lines.append("    (modeled, not measured — assumes a naive run would use")
+    lines.append(f"     {baseline_multiplier}x your input tokens with no caching)")
+    lines.append(f"    Money          : ~{fmt_money(r['saved_cost'])}")
     lines.append(
         f"    Energy         : {s['energy_wh']/1000:.3f} kWh "
         f"(~{s['energy_wh']/WH_PER_PHONE_CHARGE:.0f} phone charges, "
@@ -282,9 +284,9 @@ def human_report(r, files_read, baseline_multiplier, milestone_hit):
     if milestone_hit is not None:
         lines.append("")
         lines.append("  " + "*" * 56)
-        lines.append(f"  MILESTONE! You've now saved {fmt_money(milestone_hit)}+ ")
-        lines.append("  by querying efficiently. Money in your pocket and a")
-        lines.append("  lighter footprint on the planet. Keep it up!")
+        lines.append(f"  MILESTONE! ~{fmt_money(milestone_hit)}+ estimated savings ")
+        lines.append("  vs a naive workflow — money likely kept in your pocket")
+        lines.append("  and a lighter footprint. An estimate, but keep it up!")
         lines.append("  " + "*" * 56)
     lines.append("")
     lines.append("  Figures are estimates from public 2025-2026 data; see")
