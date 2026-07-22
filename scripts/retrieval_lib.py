@@ -320,7 +320,11 @@ class BM25Index:
     def build(cls, chunks):
         idx = cls()
         for i, c in enumerate(chunks):
-            toks = tokenize(c.header + " " + c.text)
+            # Header tokens (path + symbol + signature) weighted 3x: the
+            # chunk *defining* a symbol must outrank chunks merely
+            # mentioning it (tests, callers), which BM25's length
+            # normalization would otherwise favor.
+            toks = tokenize(c.header) * 3 + tokenize(c.text)
             idx.ids.append(c.id)
             idx.doc_lens.append(len(toks))
             tf: dict[str, int] = {}

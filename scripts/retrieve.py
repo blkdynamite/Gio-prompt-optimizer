@@ -163,7 +163,8 @@ def _format(root, query, ranked, by_id, mode, degraded, degraded_reason,
                         "line_start": c.line_start, "line_end": c.line_end,
                         "symbol": c.symbol, "kind": c.kind,
                         "score": round(float(score), 4), "header": c.header,
-                        "source": c.source})
+                        "source": c.source,
+                        "tokens": rl.estimate_tokens(c.text)})
     timings["total_ms"] = _elapsed_ms(t0)
     return {"query": query, "mode": mode, "degraded": degraded,
             "degraded_reason": degraded_reason, "stale": stale,
