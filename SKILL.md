@@ -31,7 +31,7 @@ Tokens are the unit of cost, latency, **and** environmental footprint
 (datacenter energy + cooling water), so trimming wasted tokens helps the wallet
 and the planet at once.
 
-Gio has six parts:
+Gio has seven parts:
 
 1. **Token-reduction playbook** — habits to keep each query lean (below).
 2. **Impact calculator** — `scripts/impact.py`: reads real usage logs and, at
@@ -46,6 +46,8 @@ Gio has six parts:
    index, map-then-verify) and `scripts/index.py` + `scripts/retrieve.py`
    (hybrid lexical+embedding search returning file:line spans) →
    `references/codebase-map.md`, `references/semantic-retrieval.md`.
+7. **Model-tier routing** — `scripts/model_router.py`: plan on the best model
+   available, delegate mechanical work to cheaper ones (below).
 
 Read the linked reference file when a task calls for that part; the summaries
 below say when.
@@ -94,7 +96,8 @@ specific files/contract to check.
 - **Use Plan mode** for complex work so exploration is deliberate.
 - **Lean on prompt caching** — a stable prefix (frozen `CLAUDE.md`, unchanging
   tools) is re-served at ~10% price; don't churn early context mid-session.
-- **Route trivial tasks to a cheaper model** (e.g. Haiku).
+- **Route trivial tasks to a cheaper model** (e.g. Haiku) — Part 7 has the
+  full routing table.
 
 ---
 
@@ -229,3 +232,32 @@ python3 scripts/codebase_map.py --help          # all flags
 ```
 
 Full protocol, tiers, and tuning: **`references/codebase-map.md`**.
+
+---
+
+## Part 7 — Model-tier routing
+
+Tokens on the wrong model are waste in both directions: planning on a small
+model produces rework; bulk mechanical work on the largest model burns money.
+The split: **think on the best model available, execute mechanics on the
+cheapest that can't get it wrong.**
+
+- **Find the best available model** with
+  `python3 scripts/model_router.py --json` — it reads local evidence only
+  (settings files, env vars, model ids in Claude Code's own usage logs) and
+  returns a routing recommendation with a confidence level. It is
+  **report-only**: evidence of access is not entitlement, so `unknown` →
+  `inherit` (no override) and nothing is ever blocked on it.
+- **Apply it when spawning subagents** (Claude Code's Agent/Task tools accept
+  a `model` override):
+
+  | work | model |
+  |---|---|
+  | planning, orchestration, root-cause analysis | best available |
+  | code review (phases 1–3 of Part 5) | Sonnet or better |
+  | parallel `Explore` fan-outs, mechanical multi-file edits, log/output summarization | Haiku |
+  | tier unknown (fresh install, Cursor, non-Claude-Code host) | inherit — use the session's model |
+
+- **Single-model environments** (Cursor, fixed-model sessions) still get the
+  savings that matter most from Parts 1A–1C; routing is an optimization on
+  top, never a requirement.

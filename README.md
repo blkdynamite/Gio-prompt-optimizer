@@ -102,6 +102,7 @@ before I merge."*
 | ✅ **Reviews before you ship** | A six-phase check for bugs, security, and architecture before anything merges. |
 | 🗺️ **Maps your codebase** | Builds a labeled, regenerable index (`python3 scripts/codebase_map.py`) so it jumps straight to the right file and lines instead of re-scanning the whole project. |
 | 🔎 **Finds code by meaning** | Hybrid semantic search (`python3 scripts/retrieve.py "where is login handled"`) — local embeddings + BM25 find the right code even when your words don't match the code's words, and return exact `file:line` spans to read. |
+| 🎚️ **Routes work to the right model** | `python3 scripts/model_router.py` — plans on the best model you have access to, hands mechanical work to cheaper ones. Report-only, evidence-based, never blocks. |
 
 Each part has a short guide in [`references/`](references/); the full playbook
 Claude follows is in [`SKILL.md`](SKILL.md).
