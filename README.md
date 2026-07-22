@@ -154,7 +154,7 @@ your machine. Current committed results
 
 | config | hit@1 | hit@5 | MRR@10 | tokens-to-task | p50 latency |
 |---|---|---|---|---|---|
-| lexical (BM25) | 58% | 83% | 0.66 | 486 | 8 ms |
+| lexical (BM25) | 50% | 83% | 0.63 | 512 | 11 ms |
 | vector / hybrid (embedding backends) | *pending: run locally* | | | | |
 
 The embedding rows need a one-time model download, so they are generated on
