@@ -60,22 +60,29 @@ Claude Code logs — nothing leaves your machine.)*
 
 ## Install (2 minutes)
 
-Gio is a folder of files Claude Code reads. Just put it where Claude Code looks
-for skills.
+**As a Claude Code plugin (easiest):** inside Claude Code, run
 
-**For all your projects:**
-
-```bash
-git clone https://github.com/<your-username>/gio.git
-mkdir -p ~/.claude/skills
-cp -r gio ~/.claude/skills/gio
+```
+/plugin marketplace add blkdynamite/Gio-prompt-optimizer
+/plugin install gio@blkdynamite-plugins
 ```
 
-**For one project (and to share with teammates):**
+**Or manually** — Gio is a folder of files Claude Code reads. Just put it
+where Claude Code looks for skills.
+
+For all your projects:
+
+```bash
+git clone https://github.com/blkdynamite/Gio-prompt-optimizer.git
+mkdir -p ~/.claude/skills
+cp -r Gio-prompt-optimizer ~/.claude/skills/gio
+```
+
+For one project (and to share with teammates):
 
 ```bash
 mkdir -p .claude/skills
-cp -r /path/to/gio .claude/skills/gio
+cp -r /path/to/Gio-prompt-optimizer .claude/skills/gio
 ```
 
 That's it. Open Claude Code and just build — Gio activates when it's relevant.
@@ -94,6 +101,7 @@ before I merge."*
 | 🧹 **Keeps code clean** | Reuses code instead of duplicating it, fixes root causes (not patches), and tidies as it goes. |
 | ✅ **Reviews before you ship** | A six-phase check for bugs, security, and architecture before anything merges. |
 | 🗺️ **Maps your codebase** | Builds a labeled, regenerable index (`python3 scripts/codebase_map.py`) so it jumps straight to the right file and lines instead of re-scanning the whole project. |
+| 🔎 **Finds code by meaning** | Hybrid semantic search (`python3 scripts/retrieve.py "where is login handled"`) — local embeddings + BM25 find the right code even when your words don't match the code's words, and return exact `file:line` spans to read. |
 
 Each part has a short guide in [`references/`](references/); the full playbook
 Claude follows is in [`SKILL.md`](SKILL.md).
@@ -110,6 +118,51 @@ python3 scripts/impact.py --help      # all options
 
 It reads the usage logs Claude Code already keeps on your computer. No account,
 no upload, no tracking.
+
+---
+
+## Semantic retrieval (optional)
+
+Lexical search fails when your words don't match the code's words — you say
+"login screen", the code says `auth` and `session`. Gio's retrieval index
+fixes that with **hybrid search**: a zero-install BM25 ranker plus optional
+local embeddings, fused so exact identifiers still win where embeddings are
+weak.
+
+```bash
+# Zero installs — lexical-ranked retrieval works out of the box:
+python3 scripts/index.py --backend none
+python3 scripts/retrieve.py "where are savings estimated"
+
+# Optional: enable embeddings (lightweight, no torch, ~30 MB model):
+pip install -r scripts/requirements-semantic.txt
+python3 scripts/index.py
+```
+
+**Privacy:** embedding models run locally; code and queries never leave your
+machine. The only network access is a one-time model download at *index*
+time — never at query time, and never in `--backend none` mode.
+
+### Measured, not asserted
+
+Every retrieval claim is backed by a published eval
+([`scripts/eval_retrieval.py`](scripts/eval_retrieval.py) over the labeled
+golden set in [`eval/`](eval/)) — deterministic, free, and reproducible on
+your machine. Current committed results
+(full table in [`eval/RESULTS.md`](eval/RESULTS.md)):
+
+| config | hit@1 | hit@5 | MRR@10 | tokens-to-task | p50 latency |
+|---|---|---|---|---|---|
+| lexical (BM25) | 58% | 83% | 0.66 | 486 | 8 ms |
+| vector / hybrid (embedding backends) | *pending: run locally* | | | | |
+
+The embedding rows need a one-time model download, so they are generated on
+your machine: `python3 scripts/eval_retrieval.py --backends model2vec` (add
+`,fastembed,st` to compare backends — the measured winner is the right
+default for *your* repos). There's also an opt-in
+[promptfoo](https://promptfoo.dev) harness in
+[`eval/promptfoo/`](eval/promptfoo/) that grades end-to-end answer quality
+with an LLM judge using your own API key.
 
 ---
 

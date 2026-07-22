@@ -11,9 +11,13 @@ description: >-
   a project clear and maintainable, track decisions, or see how much money and
   environmental impact their efficient habits have saved. Includes an impact
   calculator that reads real usage logs and reports money/energy/water/CO2
-  saved at milestones, and a codebase-map generator that builds a labeled,
+  saved at milestones, a codebase-map generator that builds a labeled,
   regenerable index so agents jump straight to the right file and lines
-  (map-then-verify) instead of re-scanning the project each task.
+  (map-then-verify) instead of re-scanning the project each task, and hybrid
+  semantic retrieval (local embeddings + BM25, fully private) that finds the
+  right code even when the words don't match — "login screen" finds the auth
+  module. Use it to search the codebase semantically, find where a behavior
+  lives, or recall related past decisions before starting new work.
 ---
 
 # Gio — your vibe-coding sidekick
@@ -38,8 +42,10 @@ Gio has six parts:
    low-hanging-fruit mistakes → `references/code-quality.md`.
 5. **Code review process** — a six-phase loop before merging →
    `references/code-review.md`.
-6. **Codebase map** — `scripts/codebase_map.py`: a labeled, regenerable index
-   the agent consults (map-then-verify) → `references/codebase-map.md`.
+6. **Codebase map & semantic retrieval** — `scripts/codebase_map.py` (symbol
+   index, map-then-verify) and `scripts/index.py` + `scripts/retrieve.py`
+   (hybrid lexical+embedding search returning file:line spans) →
+   `references/codebase-map.md`, `references/semantic-retrieval.md`.
 
 Read the linked reference file when a task calls for that part; the summaries
 below say when.
@@ -173,12 +179,34 @@ Skip for one-liners, docs, and pure dependency bumps. Full detail and checklist:
 
 ---
 
-## Part 6 — Codebase map
+## Part 6 — Codebase map & semantic retrieval
 
-A labeled, regenerable index of the repo — module → file → purpose → key symbols
-with line ranges — so you jump straight to the right place instead of
-re-discovering the layout every task. It turns Part 1's "locate before you read"
-from a per-task search into a one-time index lookup.
+Two regenerable, fully local indexes that turn Part 1's "locate before you
+read" from a per-task search into an index lookup: the **codebase map**
+(symbols with line ranges) and the **retrieval index** (hybrid BM25 +
+embedding search over code chunks, for when the user's words don't match the
+code's words — "login screen" finds the `auth` module).
+
+**Decision rule — pick the cheapest tool that answers:**
+
+1. **Exact symbol name known** → `codebase_map.py --find NAME` (one line out).
+2. **Conceptual question** ("where is retry handled?") →
+   `retrieve.py "..."` and Read only the returned `file:line` spans.
+3. **Result looks off, or retrieval reports `degraded`** → Part 1A
+   grep/glob discipline. Both indexes are pointers, never the source of
+   truth — always Read the span to verify before acting.
+
+```bash
+python3 scripts/index.py                   # build/update retrieval index (incremental)
+python3 scripts/index.py --backend none    # lexical-only, zero installs
+python3 scripts/retrieve.py "where is X"   # hybrid query -> file:line spans
+python3 scripts/retrieve.py --decisions "task summary"  # related past decisions
+```
+
+Retrieval never blocks: missing embeddings, a stale index, or an offline
+machine degrade to lexical (flagged in the output), and `index.py --check`
+works as a pre-commit freshness guard. Full protocol, backends, and eval
+methodology: **`references/semantic-retrieval.md`**.
 
 - **Locate, then verify.** For a single symbol use `--find SYMBOL` (returns just
   the `file:line`); skim `CODEBASE_MAP.md` when you need the broader layout. Then

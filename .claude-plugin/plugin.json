@@ -1,0 +1,13 @@
+{
+  "name": "gio",
+  "displayName": "Gio — vibe-coding sidekick",
+  "version": "0.2.0",
+  "description": "Keeps AI-built projects lean, clean, and cheap: token-reduction playbook, hybrid semantic code retrieval (local embeddings + BM25), impact calculator, decision memory, code review process, and a codebase map.",
+  "author": {
+    "name": "blkdynamite"
+  },
+  "homepage": "https://github.com/blkdynamite/Gio-prompt-optimizer",
+  "repository": "https://github.com/blkdynamite/Gio-prompt-optimizer",
+  "license": "MIT",
+  "keywords": ["tokens", "cost", "retrieval", "embeddings", "code-review", "sustainability"]
+}

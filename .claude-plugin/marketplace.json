@@ -1,0 +1,20 @@
+{
+  "name": "blkdynamite-plugins",
+  "owner": {
+    "name": "blkdynamite"
+  },
+  "description": "Gio and friends — tools for lean, clean AI-assisted coding.",
+  "plugins": [
+    {
+      "name": "gio",
+      "source": "./",
+      "description": "Vibe-coding sidekick: token-reduction playbook, hybrid semantic code retrieval, impact calculator, decision memory, code review, codebase map.",
+      "version": "0.2.0",
+      "author": {
+        "name": "blkdynamite"
+      },
+      "homepage": "https://github.com/blkdynamite/Gio-prompt-optimizer",
+      "repository": "https://github.com/blkdynamite/Gio-prompt-optimizer"
+    }
+  ]
+}

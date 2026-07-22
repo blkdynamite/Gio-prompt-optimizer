@@ -1,0 +1,107 @@
+# Decisions
+
+Append-only log of non-trivial decisions for this repo. Newest at the bottom.
+Read before starting architectural/data/auth/dependency/interface work; add an
+entry whenever you choose between real alternatives. Supersede, don't delete.
+
+Format per entry:
+
+```
+## D-NNNN — <one-line decision>
+Date: YYYY-MM-DD  ·  Status: Accepted | Superseded by D-NNNN | Deprecated
+
+Context: <what problem / why a decision was needed>
+Decision: <what was chosen>
+Alternatives: <options considered and why rejected>
+Consequences: <follow-on obligations, migrations, things to keep in sync>
+```
+
+---
+
+## D-0001 — Adopt a decision log
+Date: 2026-06-26  ·  Status: Accepted
+
+Context: Decisions were living only in people's heads and in diffs, so they got
+re-litigated and silently contradicted.
+Decision: Maintain this append-only `DECISIONS.md`; read it before non-trivial
+work and record decisions worth remembering.
+Alternatives: Scatter rationale in PR descriptions (rejected: not discoverable
+later); rely on code comments (rejected: no cross-cutting view).
+Consequences: Each substantive change should cite or add a decision here.
+
+## D-0002 — Lightweight embedding backends by default; eval decides the winner
+Date: 2026-07-22  ·  Status: Accepted
+
+Context: Semantic retrieval needs an embedding model, but Gio's identity is
+"lean, local, copy-to-install" and its lexical path must keep working with
+zero installs.
+Decision: Pluggable `EmbeddingBackend` interface with model2vec
+(potion-base-8M, ~30 MB, no torch) as the shipping default, fastembed and
+sentence-transformers as installable alternatives, and the documented default
+subject to `scripts/eval_retrieval.py` results rather than assertion.
+Alternatives: sentence-transformers/MiniLM as sole default (rejected: ~2 GB
+torch chain is the wrong weight class for a token-saving skill); API-based
+embeddings (rejected: breaks the everything-runs-locally promise and adds
+per-query cost).
+Consequences: Embeddings are strictly optional extras
+(`scripts/requirements-semantic.txt`); every embedding claim in the README
+must cite `eval/RESULTS.md`.
+
+## D-0003 — Pure-Python Okapi BM25 for the lexical side of hybrid
+Date: 2026-07-22  ·  Status: Accepted
+
+Context: Reciprocal Rank Fusion needs a *ranked* lexical list; grep returns an
+unranked set.
+Decision: Implement Okapi BM25 (~80 lines, stdlib) in `retrieval_lib.py` over
+the same chunk store the embeddings use, with a code-aware tokenizer that
+splits snake_case/CamelCase into subtokens while keeping the whole identifier,
+and header tokens weighted 3x so definitions outrank mentions (a bug the eval
+caught).
+Alternatives: `rank_bm25` dependency (rejected: needless install for 80
+lines); grep-based pseudo-ranking (rejected: no principled scores to fuse).
+Consequences: The lexical path is the always-available floor every
+degradation route lands on; keep it dependency-free.
+
+## D-0004 — Brute-force cosine over a numpy matrix; no vector database
+Date: 2026-07-22  ·  Status: Accepted
+
+Context: Chunk embeddings need storage and nearest-neighbor search.
+Decision: L2-normalized float32 matrix in `.gio/index/embeddings.npz`,
+memory-mapped, one matvec per query; cap the index at 50k chunks.
+Alternatives: A vector DB server (rejected: wrong weight class for a local
+skill); hnswlib now (rejected: premature — below 50k chunks brute force is
+milliseconds; the `VectorStore` class is the seam if it's ever needed).
+Consequences: Repos exceeding the cap are truncated with a warning; revisit
+with hnswlib behind the same interface if that warning ever fires in practice.
+
+## D-0005 — Hybrid fusion via RRF (k=60) with identifier-query lexical boost
+Date: 2026-07-22  ·  Status: Accepted
+
+Context: Lexical and vector rankings must merge without per-repo tuning, and
+embeddings are weakest exactly where queries contain exact identifiers.
+Decision: Reciprocal Rank Fusion with k=60, weighting the lexical list 1.5x
+when the query matches identifier patterns (snake_case, CamelCase, quoted
+strings, method calls). Retrieval degrades hybrid -> lexical -> ephemeral
+in-memory index rather than ever blocking or erroring at the user.
+Alternatives: Learned/score-normalized fusion (rejected: needs tuning data and
+invites overfitting); vector-only retrieval (rejected: measurably worse on
+identifier queries).
+Consequences: Fusion behavior is covered by hand-computed tests; any change to
+weights must re-run the eval and update `eval/RESULTS.md`.
+
+## D-0006 — Model-tier routing is report-only evidence, never enforcement
+Date: 2026-07-22  ·  Status: Accepted
+
+Context: Routing planning to the best model and mechanical work to cheaper
+models saves tokens/cost, but no API exposes what tier an account is entitled
+to, and Cursor exposes nothing at all.
+Decision: `scripts/model_router.py` gathers local, read-only evidence
+(settings files, env vars, model ids seen in Claude Code's own usage logs) and
+prints a routing recommendation with a confidence field; SKILL.md Part 7 tells
+the orchestrating agent how to apply it via subagent model overrides. Unknown
+evidence -> "inherit" (no override).
+Alternatives: Hard-coding a model table (rejected: goes stale, wrong across
+account tiers); probing the API with live calls (rejected: costs money, needs
+a key, and "worked once" still isn't entitlement).
+Consequences: The router must never write config or block a workflow; logs
+prove models *used*, not *entitled*, and the docs must say so.

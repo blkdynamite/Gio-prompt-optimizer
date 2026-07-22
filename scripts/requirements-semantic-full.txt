@@ -1,0 +1,7 @@
+# Every embedding backend Gio can evaluate, for comparing quality with
+# scripts/eval_retrieval.py --backends model2vec,fastembed,st
+# WARNING: sentence-transformers pulls in torch (~2 GB). Most users want
+# requirements-semantic.txt instead.
+-r requirements-semantic.txt
+fastembed
+sentence-transformers
