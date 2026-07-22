@@ -93,6 +93,32 @@ IDENTIFIER_LEXICAL_WEIGHT = 1.5
 BM25_K1 = 1.2
 BM25_B = 0.75
 
+# Static rank priors, applied to both rankers before fusion: an agent asking
+# "where is X" almost always wants the implementation, but test files (which
+# mention symbols heavily) and prose docs (rich in the query's vocabulary)
+# otherwise outrank it. Docs still win when the query is about docs.
+PRIOR_TEST = 0.7
+PRIOR_DOCS = 0.9
+
+_TEST_PATH = re.compile(r"(^|/)(tests?|__tests__|spec)(/|$)|(^|/)test_[^/]*$"
+                        r"|[._-](test|spec)\.[A-Za-z]+$")
+
+
+def rank_prior(chunk) -> float:
+    """Score multiplier for a chunk based on what kind of file it lives in."""
+    if _TEST_PATH.search(chunk.path):
+        return PRIOR_TEST
+    if chunk.lang == "markdown":
+        return PRIOR_DOCS
+    return 1.0
+
+
+def apply_priors(ranked, by_id):
+    """Re-rank a [(chunk_id, score)] list by score x rank_prior(chunk)."""
+    adjusted = [(cid, score * rank_prior(by_id[cid]))
+                for cid, score in ranked if cid in by_id]
+    return sorted(adjusted, key=lambda kv: -kv[1])
+
 # A concurrent index build holding the lock longer than this is presumed dead.
 LOCK_STALE_SECONDS = 600
 

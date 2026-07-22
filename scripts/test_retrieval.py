@@ -210,6 +210,25 @@ class TestFusion(unittest.TestCase):
         fused = dict(rl.rrf_fuse([[("a", 1)], [("b", 1)]], weights=[2.0, 1.0]))
         self.assertGreater(fused["a"], fused["b"])
 
+    def test_rank_priors(self):
+        def chunk(path, lang):
+            return rl.Chunk(id=path, path=path, symbol="s", kind="function",
+                            line_start=1, line_end=2, header="", text="x",
+                            sha="x", lang=lang)
+        self.assertEqual(rl.rank_prior(chunk("src/auth.py", "python")), 1.0)
+        self.assertEqual(rl.rank_prior(chunk("scripts/test_auth.py",
+                                             "python")), rl.PRIOR_TEST)
+        self.assertEqual(rl.rank_prior(chunk("tests/helpers.py", "python")),
+                         rl.PRIOR_TEST)
+        self.assertEqual(rl.rank_prior(chunk("lib/auth.spec.js",
+                                             "javascript")), rl.PRIOR_TEST)
+        self.assertEqual(rl.rank_prior(chunk("README.md", "markdown")),
+                         rl.PRIOR_DOCS)
+        by_id = {"code": chunk("a.py", "python"),
+                 "test": chunk("test_a.py", "python")}
+        ranked = rl.apply_priors([("test", 1.0), ("code", 0.9)], by_id)
+        self.assertEqual(ranked[0][0], "code")  # 0.9 beats 1.0 * 0.7
+
     def test_identifier_detection(self):
         for q in ("where is cost_usd applied", "fix SessionManager please",
                   'find the string "no logs found"', "call fetch.user()"):

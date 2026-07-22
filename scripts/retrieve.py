@@ -80,7 +80,7 @@ def run_query(root, query, k, mode, budget_ms):
         bm25 = rl.BM25Index.build(chunks)
         timings["ephemeral_build_ms"] = _elapsed_ms(t)
         by_id = {c.id: c for c in chunks}
-        ranked = bm25.search(query, k)
+        ranked = rl.apply_priors(bm25.search(query, 2 * k), by_id)[:k]
         return _format(root, query, ranked, by_id, mode="lexical",
                        degraded="ephemeral-lexical",
                        degraded_reason="; ".join(problems),
@@ -96,7 +96,7 @@ def run_query(root, query, k, mode, budget_ms):
 
     fetch_k = max(20, 2 * k)
     t = time.time()
-    lex_ranked = bm25.search(query, fetch_k)
+    lex_ranked = rl.apply_priors(bm25.search(query, fetch_k), by_id)
     timings["bm25_ms"] = _elapsed_ms(t)
 
     vec_ranked = []
@@ -115,7 +115,8 @@ def run_query(root, query, k, mode, budget_ms):
                 t = time.time()
                 qvec = backend.embed([query])[0]
                 store = rl.VectorStore.load(idx_dir / rl.EMBEDDINGS_FILE)
-                vec_ranked = store.search(qvec, fetch_k)
+                vec_ranked = rl.apply_priors(store.search(qvec, fetch_k),
+                                             by_id)
                 timings["vector_ms"] = _elapsed_ms(t)
             except Exception as e:
                 degraded, mode = "lexical-only", "lexical"

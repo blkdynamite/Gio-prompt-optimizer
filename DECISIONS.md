@@ -105,3 +105,18 @@ account tiers); probing the API with live calls (rejected: costs money, needs
 a key, and "worked once" still isn't entitlement).
 Consequences: The router must never write config or block a workflow; logs
 prove models *used*, not *entitled*, and the docs must say so.
+
+## D-0007 — Static rank priors: code > docs > tests
+Date: 2026-07-22  ·  Status: Accepted
+
+Context: Re-running the eval after the repo grew showed conceptual hit@5
+dropping from 83% to 75% — test files (heavy symbol mentioners) and prose
+docs (rich in query vocabulary) were outranking the implementing code.
+Decision: Multiply both rankers' scores before fusion by a static prior:
+0.7 for test files, 0.9 for markdown, 1.0 for code (`rank_prior` in
+retrieval_lib.py). Restored hit@5 to 83% and improved vector/hybrid too.
+Alternatives: Query-intent classification (rejected: complexity without
+evidence it beats a constant); excluding tests entirely (rejected: sometimes
+they are the answer).
+Consequences: Priors are eval-tuned constants; changing them requires
+re-running scripts/eval_retrieval.py and updating eval/RESULTS.md.
