@@ -40,6 +40,27 @@ Braintrust stays dormant until you add a `BRAINTRUST_API_KEY` secret.
 
 ---
 
+## Try it on your own repo (zero setup)
+
+Hand this to anyone — no API key, no labels, nothing leaves their machine. From
+inside a project with the plugin installed:
+
+```
+/gio-benchmark
+```
+
+or directly: `python3 bench/self_benchmark.py --root /path/to/repo`. It builds
+Gio's index, runs probe questions, and reports the **input-token reduction** —
+Gio's targeted spans vs. reading the whole files — as a ratio, a token count, and
+a projected dollar figure, written to a shareable `GIO_SELF_REPORT.md`. Add
+`--with-usage` for real savings from the user's own Claude Code logs.
+
+**Repo size matters:** below ~2–4k LOC the whole repo is cheap to read (modest
+absolute savings); the sweet spot is **~10k–200k LOC** (~5–18× fewer tokens); above
+~750k–2M LOC Gio hits its 50k-chunk index cap and truncates.
+
+---
+
 ## How Gio is benchmarked (three layers, cheapest first)
 
 Gio makes two headline claims — **better code retrieval** and **lower token/cost**.

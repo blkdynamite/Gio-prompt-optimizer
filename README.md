@@ -179,6 +179,34 @@ which eval tool to use for which audience.
 
 ---
 
+## Benchmark it on your own repo
+
+Want to see the token savings on *your* code (or hand it to a friend)? Install the
+plugin, then from inside your project run:
+
+```
+/gio-benchmark
+```
+
+Or without the plugin:
+
+```bash
+python3 bench/self_benchmark.py --root /path/to/your/repo
+```
+
+No API key, no labels, nothing leaves your machine. It builds Gio's index, runs a
+set of probe questions, and reports how many **input tokens** Gio's targeted
+retrieval feeds into context versus reading the whole files — a ratio, a token
+count, and a projected dollar figure — then writes a shareable `GIO_SELF_REPORT.md`.
+Add `--with-usage` to fold in real savings from your own Claude Code logs.
+
+**What to expect by repo size:** below ~2–4k LOC the whole repo is cheap to read,
+so absolute savings are modest (the ratio still holds). The sweet spot is
+**~10k–200k LOC**, where reading whole files costs ~5–18× more than Gio's spans.
+On this repo it's ~5× fewer input tokens across the probe set.
+
+---
+
 ## Honest about the numbers
 
 - **What you spent and used is measured** from your real logs.

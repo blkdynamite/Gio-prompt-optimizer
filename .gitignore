@@ -15,3 +15,7 @@ __pycache__/
 # Benchmark outputs (regenerable; run bench/swebench_pro_ab.py + report.py)
 bench/out*/
 bench/REPORT.md
+
+# Self-benchmark reports (regenerable; run bench/self_benchmark.py or /gio-benchmark)
+bench/SELF_REPORT.md
+GIO_SELF_REPORT.md
