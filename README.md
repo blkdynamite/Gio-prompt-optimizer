@@ -109,6 +109,32 @@ Claude follows is in [`SKILL.md`](SKILL.md).
 
 ---
 
+## Does it actually cut tokens? A measured demo
+
+We ran the *same* two coding tasks against [Click](https://github.com/pallets/click)
+(a real mid-size library) **twice** — once with Gio installed, once without —
+using the same model (Claude Sonnet 5) both times. Every patch was applied and
+functionally tested, so these are real fixes, not just cheaper transcripts.
+
+| task *(patches verified)* | without Gio | with Gio | reduction |
+|---|---|---|---|
+| **A** — add a "did you mean?" hint to an error<br>*(both fixes correct)* | 1.15M ctx tokens · $0.52 · 27 turns | 636K · $0.33 · 16 turns | **−45% tokens · −37% cost** |
+| **B** — guard an invalid option combination<br>*(Gio matched the spec; the plain run reinterpreted it)* | 1.37M ctx tokens · $0.87 · 28 turns | 147K · $0.11 · 4 turns | **−89% tokens · −88% cost** |
+
+On task B, Gio reached the correct minimal fix in **4 turns for 11¢**, while the
+plain run spent **28 turns and 87¢** — and drifted from the literal requirement.
+("ctx tokens" = input + cached context the model processes each turn, measured
+from Claude Code's own logs.)
+
+**Read this honestly:** it's a *demonstration* (two tasks, one run each), not a
+statistical benchmark — and the savings **grow with repo size**, so on Gio's own
+tiny repo the gap nearly vanishes. For rigorous, third-party-scored numbers
+across many issues (resolve-rate lift + token reduction with confidence
+intervals), use the paired A/B harness in [`bench/`](bench/) against SWE-Bench
+Pro.
+
+---
+
 ## See your savings anytime
 
 ```bash
