@@ -13,5 +13,5 @@ __pycache__/
 *.pyc
 
 # Benchmark outputs (regenerable; run bench/swebench_pro_ab.py + report.py)
-bench/out/
+bench/out*/
 bench/REPORT.md
