@@ -227,6 +227,53 @@ def compute(totals, baseline_multiplier, co2_g_per_wh):
     }
 
 
+def retrieval_savings(repo_root: Path, since: str):
+    """Token savings from span retrieval, measured per query.
+
+    scripts/retrieve.py logs, for every query, the tokens actually returned
+    as chunks vs the estimated tokens of the whole files those chunks live in
+    (.gio/index/usage.jsonl). The difference is what reading whole files
+    instead of spans would have cost. Chunk/file tokens are measured counts of
+    what retrieval served; the dollar figure prices them like fresh input
+    tokens, so present it with the same "modeled, not measured" framing as
+    the naive baseline. Returns None when there is no usage log.
+    """
+    usage_path = repo_root / ".gio" / "index" / "usage.jsonl"
+    if not usage_path.is_file():
+        return None
+    window = cutoff_seconds(since)
+    import time
+    now = time.time()
+    queries = chunk_tokens = whole_file_tokens = 0
+    try:
+        with open(usage_path, encoding="utf-8", errors="ignore") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if window is not None and (now - rec.get("when", 0)) > window:
+                    continue
+                queries += 1
+                chunk_tokens += rec.get("chunk_tokens", 0) or 0
+                whole_file_tokens += rec.get("whole_file_tokens", 0) or 0
+    except OSError:
+        return None
+    if queries == 0:
+        return None
+    avoided = max(0, whole_file_tokens - chunk_tokens)
+    return {
+        "queries": queries,
+        "chunk_tokens": chunk_tokens,
+        "whole_file_tokens": whole_file_tokens,
+        "tokens_avoided": avoided,
+        "est_cost_avoided": avoided / 1e6 * DEFAULT_PRICE[0],
+    }
+
+
 def load_state(state_file: Path):
     try:
         return json.loads(state_file.read_text())
@@ -246,7 +293,8 @@ def fmt_money(x):
     return f"${x:,.2f}"
 
 
-def human_report(r, files_read, baseline_multiplier, milestone_hit):
+def human_report(r, files_read, baseline_multiplier, milestone_hit,
+                 retrieval=None):
     a = r["actual"]
     s = r["saved"]
     lines = []
@@ -281,6 +329,15 @@ def human_report(r, files_read, baseline_multiplier, milestone_hit):
         f"    CO2            : {s['co2_g']/1000:.3f} kg "
         f"(~{s['co2_g']/CO2_G_PER_MILE_DRIVEN:.1f} miles not driven)"
     )
+    if retrieval:
+        lines.append("")
+        lines.append(f"  SPAN RETRIEVAL ({retrieval['queries']} queries logged)")
+        lines.append("    (chunk/file tokens measured; cost modeled at full")
+        lines.append("     input price — an estimate, like the baseline above)")
+        lines.append(f"    Served as spans : {retrieval['chunk_tokens']:,} tokens")
+        lines.append(f"    Whole files     : {retrieval['whole_file_tokens']:,} tokens")
+        lines.append(f"    Avoided reading : {retrieval['tokens_avoided']:,} tokens "
+                     f"(~{fmt_money(retrieval['est_cost_avoided'])})")
     if milestone_hit is not None:
         lines.append("")
         lines.append("  " + "*" * 56)
@@ -310,6 +367,9 @@ def main(argv=None):
     p.add_argument("--state-file",
                    default=str(Path.home() / ".claude" / "query-optimization-state.json"),
                    help="Where to track cumulative milestones")
+    p.add_argument("--repo-root", default=".",
+                   help="Repo whose .gio/index/usage.jsonl feeds the span-"
+                        "retrieval section (default: current directory)")
     p.add_argument("--json", action="store_true", help="Emit JSON instead of a report")
     args = p.parse_args(argv)
 
@@ -341,14 +401,19 @@ def main(argv=None):
         state["last_milestone"] = current_level
         save_state(state_file, state)
 
+    retrieval = retrieval_savings(
+        Path(os.path.expanduser(args.repo_root)).resolve(), args.since)
+
     if args.json:
         out = dict(r)
         out["files_read"] = files_read
         out["baseline_multiplier"] = args.baseline_multiplier
         out["milestone_hit"] = milestone_hit
+        out["retrieval"] = retrieval
         print(json.dumps(out, indent=2))
     else:
-        print(human_report(r, files_read, args.baseline_multiplier, milestone_hit))
+        print(human_report(r, files_read, args.baseline_multiplier,
+                           milestone_hit, retrieval))
     return 0
 
 

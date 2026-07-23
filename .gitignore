@@ -2,6 +2,16 @@
 .codebase-map.json
 CODEBASE_MAP.md
 
+# Gio retrieval index (regenerable; run scripts/index.py)
+.gio/
+
+# Generated promptfoo tests (regenerable; run eval/promptfoo/generate_tests.py)
+eval/promptfoo/tests.yaml
+
 # Python
 __pycache__/
 *.pyc
+
+# Benchmark outputs (regenerable; run bench/swebench_pro_ab.py + report.py)
+bench/out/
+bench/REPORT.md

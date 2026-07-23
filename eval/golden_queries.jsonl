@@ -1,0 +1,28 @@
+{"repo": "gio", "query": "where is the cache read discount applied when pricing tokens", "type": "conceptual", "relevant": [{"path": "scripts/impact.py", "symbols": ["cost_usd"]}]}
+{"repo": "gio", "query": "how does the tool detect that the codebase map is out of date", "type": "conceptual", "relevant": [{"path": "scripts/codebase_map.py", "symbols": ["check_staleness"]}]}
+{"repo": "gio", "query": "cost_usd", "type": "identifier", "relevant": [{"path": "scripts/impact.py", "symbols": ["cost_usd"]}]}
+{"repo": "gio", "query": "convert energy usage into water and carbon footprint numbers", "type": "conceptual", "relevant": [{"path": "scripts/impact.py", "symbols": ["footprint"]}]}
+{"repo": "gio", "query": "list the source files to index while honoring gitignore", "type": "conceptual", "relevant": [{"path": "scripts/codebase_map.py", "symbols": ["discover_files"]}]}
+{"repo": "gio", "query": "how are the naive baseline savings estimated", "type": "conceptual", "relevant": [{"path": "scripts/impact.py", "symbols": ["compute"]}]}
+{"repo": "gio", "query": "find_symbol", "type": "identifier", "relevant": [{"path": "scripts/codebase_map.py", "symbols": ["find_symbol"]}]}
+{"repo": "gio", "query": "extract python classes and functions with their line numbers", "type": "conceptual", "relevant": [{"path": "scripts/codebase_map.py", "symbols": ["extract_ast"]}]}
+{"repo": "gio", "query": "turn markdown headings into navigable symbols", "type": "conceptual", "relevant": [{"path": "scripts/codebase_map.py", "symbols": ["extract_markdown"]}]}
+{"repo": "gio", "query": "what does the playbook say about delegating heavy exploration to subagents", "type": "cross-file", "relevant": [{"path": "SKILL.md", "symbols": ["Delegate heavy exploration"]}, {"path": "references/code-review.md"}]}
+{"repo": "gio", "query": "milestone celebration saved state between runs", "type": "cross-file", "relevant": [{"path": "scripts/impact.py", "symbols": ["load_state", "save_state", "milestone"]}]}
+{"repo": "gio", "query": "what is the decision log entry format", "type": "cross-file", "relevant": [{"path": "references/decisions-memory.md"}, {"path": "templates/DECISIONS.md"}]}
+{"repo": "click", "query": "how are command line options parsed into parameters", "type": "conceptual", "relevant": [{"path": "src/click/core.py"}, {"path": "src/click/parser.py"}]}
+{"repo": "click", "query": "prompt the user for input with a default value", "type": "conceptual", "relevant": [{"path": "src/click/termui.py"}]}
+{"repo": "click", "query": "BadParameter", "type": "identifier", "relevant": [{"path": "src/click/exceptions.py"}]}
+{"repo": "click", "query": "render a progress bar while iterating", "type": "conceptual", "relevant": [{"path": "src/click/_termui_impl.py"}, {"path": "src/click/termui.py"}]}
+{"repo": "click", "query": "convert a string argument into an integer or file handle", "type": "conceptual", "relevant": [{"path": "src/click/types.py"}]}
+{"repo": "click", "query": "group multiple subcommands under one command", "type": "conceptual", "relevant": [{"path": "src/click/core.py", "symbols": ["Group"]}]}
+{"repo": "click", "query": "decorator that turns a function into a command", "type": "conceptual", "relevant": [{"path": "src/click/decorators.py"}]}
+{"repo": "click", "query": "strip ansi colors when output is not a terminal", "type": "cross-file", "relevant": [{"path": "src/click/utils.py"}, {"path": "src/click/_compat.py"}, {"path": "src/click/termui.py"}]}
+{"repo": "express", "query": "how is a route matched against the request path", "type": "conceptual", "relevant": [{"path": "lib/router/index.js"}, {"path": "lib/router/layer.js"}]}
+{"repo": "express", "query": "send a json response body", "type": "conceptual", "relevant": [{"path": "lib/response.js"}]}
+{"repo": "express", "query": "register middleware with use", "type": "conceptual", "relevant": [{"path": "lib/application.js"}, {"path": "lib/router/index.js"}]}
+{"repo": "express", "query": "parse the query string from the request url", "type": "conceptual", "relevant": [{"path": "lib/middleware/query.js"}, {"path": "lib/request.js"}]}
+{"repo": "express", "query": "render a view template and send the html", "type": "cross-file", "relevant": [{"path": "lib/view.js"}, {"path": "lib/response.js"}, {"path": "lib/application.js"}]}
+{"repo": "express", "query": "createApplication", "type": "identifier", "relevant": [{"path": "lib/express.js"}]}
+{"repo": "express", "query": "generate an etag header for the response", "type": "conceptual", "relevant": [{"path": "lib/utils.js"}, {"path": "lib/response.js"}]}
+{"repo": "express", "query": "how does the trust proxy setting work", "type": "conceptual", "relevant": [{"path": "lib/application.js"}, {"path": "lib/utils.js"}]}

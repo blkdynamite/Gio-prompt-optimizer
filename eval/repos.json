@@ -1,0 +1,17 @@
+{
+  "gio": {
+    "url": null,
+    "ref": null,
+    "note": "This repository itself — always available, runs offline."
+  },
+  "click": {
+    "url": "https://github.com/pallets/click",
+    "ref": "8.1.7",
+    "note": "Mid-size Python CLI library; exercises the ast extraction tier."
+  },
+  "express": {
+    "url": "https://github.com/expressjs/express",
+    "ref": "4.19.2",
+    "note": "JavaScript; exercises the non-Python (ctags/regex) extraction tiers."
+  }
+}

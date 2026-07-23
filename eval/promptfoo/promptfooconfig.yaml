@@ -1,0 +1,39 @@
+# Opt-in external validation of Gio's retrieval via promptfoo
+# (https://promptfoo.dev — a widely used open-source LLM eval harness).
+#
+# What it checks: for every golden query, a model must answer using ONLY the
+# top-5 chunks each retrieval mode returned. An llm-rubric judge grades
+# whether the answer names the right file/function. Better retrieval ->
+# better-grounded answers, scored by an independent harness.
+#
+# What it costs: real API calls with your own key. The primary, free,
+# deterministic evidence stays in scripts/eval_retrieval.py; this harness is
+# extra external validation of the end-to-end answer-quality claim.
+#
+# Run:
+#   python3 ../../scripts/index.py           # build the index first
+#   python3 generate_tests.py                # writes tests.yaml
+#   export ANTHROPIC_API_KEY=...
+#   npx promptfoo@latest eval
+
+description: "Gio retrieval — answer-quality validation (opt-in, costs API credits)"
+
+prompts:
+  - |
+    You are answering a question about a codebase. Use ONLY the context below.
+    If the context does not contain the answer, say so.
+
+    Question: {{query}}
+
+    Context:
+    {{context}}
+
+    Answer with the specific file (and function/section if applicable) where
+    this behavior lives, and a one-sentence explanation.
+
+providers:
+  - id: anthropic:messages:claude-sonnet-5
+    config:
+      max_tokens: 300
+
+tests: file://tests.yaml

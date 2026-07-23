@@ -1,0 +1,6 @@
+# Optional extras for Gio's semantic retrieval (the lexical BM25 path needs
+# NOTHING installed — these only enable the embedding side of hybrid search).
+# Deliberately lightweight: no torch. ~30 MB model downloaded once at index
+# time from Hugging Face; after that everything runs offline.
+numpy
+model2vec
