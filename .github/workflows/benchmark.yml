@@ -1,0 +1,137 @@
+name: benchmark
+
+# Cloud benchmarking for Gio — runs in GitHub Actions (the cloud), nothing local.
+#
+# Layers, cheapest first:
+#   1. retrieval-eval   free, deterministic, no secrets — the regression gate.
+#                       Runs on every push + PR.
+#   2. answer-quality   Promptfoo LLM-judge; comments the eval table on the PR.
+#                       Runs on PRs only, and only when ANTHROPIC_API_KEY is set.
+#   3. swebench-pro     Plumbing check for the paid SWE-Bench Pro A/B harness.
+#                       Manual (workflow_dispatch) only. The full paid run needs
+#                       Claude Code logged in + a Modal account — see bench/README.md;
+#                       CI runs the free offline --dry-run to validate wiring.
+#   4. braintrust       Optional push of headline metrics to a hosted Braintrust
+#                       dashboard for business-facing sharing. Only when
+#                       BRAINTRUST_API_KEY is set.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      swebench_model:
+        description: "Model id (informational — the CI dry-run uses a stub executor, no API spend)"
+        default: "claude-sonnet-5"
+
+permissions:
+  contents: read
+
+jobs:
+  # Free, deterministic retrieval quality gate — no API keys, no cost.
+  retrieval-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Retrieval eval + regression gate (hit@5 >= 0.80)
+        run: python3 bench/ci_gate.py --min-hit5 0.80 --report retrieval-report.md
+      - name: Upload retrieval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retrieval-report
+          path: retrieval-report.md
+
+  # Detect which optional secrets are available (secrets can't be used in job-level
+  # `if:` directly, so surface them as outputs here).
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      has_anthropic: ${{ steps.check.outputs.has_anthropic }}
+      has_braintrust: ${{ steps.check.outputs.has_braintrust }}
+    steps:
+      - id: check
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BRAINTRUST_API_KEY: ${{ secrets.BRAINTRUST_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "has_anthropic=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_anthropic=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "$BRAINTRUST_API_KEY" ]; then
+            echo "has_braintrust=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_braintrust=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # LLM-judged answer quality via Promptfoo — comments the results table on the PR.
+  answer-quality:
+    needs: guard
+    if: ${{ github.event_name == 'pull_request' && needs.guard.outputs.has_anthropic == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build lexical index and generate Promptfoo tests
+        run: |
+          python3 scripts/index.py --backend none
+          python3 eval/promptfoo/generate_tests.py
+      - name: Run Promptfoo eval and comment on the PR
+        uses: promptfoo/promptfoo-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          config: promptfooconfig.yaml
+          working-directory: eval/promptfoo
+          no-share: "true"
+
+  # Plumbing check for the paid end-to-end A/B harness (manual trigger only).
+  # The full paid run is intended for a machine with Claude Code logged in and a
+  # Modal account (bench/README.md); CI validates the wiring offline for free.
+  swebench-pro:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: SWE-Bench Pro A/B plumbing check (offline dry-run, no cost)
+        run: |
+          python3 bench/swebench_pro_ab.py --dry-run --backend none \
+            --model "${{ github.event.inputs.swebench_model }}" --out bench/out-ci
+      - name: Upload dry-run predictions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swebench-dryrun
+          path: bench/out-ci/
+
+  # Optional: publish headline metrics to a hosted Braintrust dashboard so
+  # non-technical stakeholders can track them over time (metric drift).
+  braintrust-publish:
+    needs: [retrieval-eval, guard]
+    if: ${{ needs.guard.outputs.has_braintrust == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Publish retrieval metrics to Braintrust
+        env:
+          BRAINTRUST_API_KEY: ${{ secrets.BRAINTRUST_API_KEY }}
+        run: |
+          pip install braintrust
+          python3 bench/braintrust_publish.py

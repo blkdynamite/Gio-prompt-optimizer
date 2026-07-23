@@ -2,6 +2,8 @@
 
 **Your vibe-coding sidekick. Lean, clean, and easy on the planet.**
 
+[![benchmark](https://github.com/blkdynamite/Gio-prompt-optimizer/actions/workflows/benchmark.yml/badge.svg)](https://github.com/blkdynamite/Gio-prompt-optimizer/actions/workflows/benchmark.yml)
+
 Gio is a [Claude Code](https://claude.com/claude-code) skill for people building
 with AI — especially if you're newer to coding. It quietly does the things
 experienced engineers do automatically: spend fewer tokens, keep your project
@@ -164,6 +166,12 @@ default for *your* repos). There's also an opt-in
 [promptfoo](https://promptfoo.dev) harness in
 [`eval/promptfoo/`](eval/promptfoo/) that grades end-to-end answer quality
 with an LLM judge using your own API key.
+
+**Benchmarked in the cloud.** All of this also runs in GitHub Actions — a free
+deterministic retrieval gate on every push/PR, Promptfoo answer-quality comments
+on PRs, and an on-demand SWE-Bench Pro A/B — so you don't have to run anything
+locally. See [`bench/BENCHMARKING.md`](bench/BENCHMARKING.md) for how it works and
+which eval tool to use for which audience.
 
 ---
 
