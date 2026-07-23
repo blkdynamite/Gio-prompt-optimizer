@@ -151,13 +151,17 @@ time — never at query time, and never in `--backend none` mode.
 Every retrieval claim is backed by a published eval
 ([`scripts/eval_retrieval.py`](scripts/eval_retrieval.py) over the labeled
 golden set in [`eval/`](eval/)) — deterministic, free, and reproducible on
-your machine. Current committed results
-(full table in [`eval/RESULTS.md`](eval/RESULTS.md)):
+your machine and re-verified in CI on every push (full table in
+[`eval/RESULTS.md`](eval/RESULTS.md); the CI run uploads it as an artifact):
 
 | config | hit@1 | hit@5 | MRR@10 | tokens-to-task | p50 latency |
 |---|---|---|---|---|---|
-| lexical (BM25) | 50% | 83% | 0.63 | 512 | 11 ms |
+| lexical (BM25) | 68% | 93% | 0.79 | 458 | ~20 ms |
 | vector / hybrid (embedding backends) | *pending: run locally* | | | | |
+
+Measured over 28 golden queries across this repo plus two pinned external
+repos (`click`, `express`); by query type, lexical hit@5 is 89% conceptual,
+100% cross-file, 100% identifier.
 
 The embedding rows need a one-time model download, so they are generated on
 your machine: `python3 scripts/eval_retrieval.py --backends model2vec` (add
