@@ -290,7 +290,10 @@ def run_instance_arm(inst, arm, args, executor, out_dir):
     if arm == "gio":
         index_wall = install_gio(ws, args.backend)
 
-    run_dir = out_dir / "runs" / f"{inst['instance_id']}--{arm}"
+    # Absolute: this becomes CLAUDE_CONFIG_DIR for a child process whose cwd
+    # is the workspace clone — a relative path would land Claude Code's
+    # config/logs inside the workspace and pollute the captured patch.
+    run_dir = (out_dir / "runs" / f"{inst['instance_id']}--{arm}").resolve()
     run_dir.mkdir(parents=True, exist_ok=True)
     prompt = PROMPT_TEMPLATE.format(
         problem_statement=inst.get("problem_statement", ""))
@@ -304,9 +307,12 @@ def run_instance_arm(inst, arm, args, executor, out_dir):
         "instance_id": inst["instance_id"], "patch": patch,
         "prefix": f"gio-ab-{arm}"})
     usage = usage_from_result(result, run_dir)
+    model_used = (result.get("model")
+                  or next(iter(result.get("modelUsage") or {}), "")
+                  or args.model or "")
     append_usage(out_dir, {
         "instance_id": inst["instance_id"], "arm": arm,
-        "model": result.get("model", args.model or ""),
+        "model": model_used,
         **usage,
         "num_turns": result.get("num_turns", ""),
         "wall_s": round(wall, 1), "index_wall_s": round(index_wall, 1),
