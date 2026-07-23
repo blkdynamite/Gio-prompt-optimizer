@@ -9,10 +9,17 @@ its own control.
 
 ## Requirements
 
-- Claude Code CLI logged in; Docker; Python 3.11+
+- Claude Code CLI logged in; Python 3.11+
 - `pip install -r bench/requirements.txt` (just `datasets`, for the instance list)
 - The official harness: `git clone https://github.com/scaleapi/SWE-bench_Pro-os`
   and `pip install -r SWE-bench_Pro-os/requirements.txt`
+- **A scoring backend** — one of:
+  - **Modal (default, recommended):** `pip install modal && modal setup` —
+    the harness offloads containerized test execution to Modal's cloud, so
+    no local Docker is needed. Test-run compute bills to your Modal account
+    (separate from API spend; Modal has a free tier).
+  - **Local Docker (beta):** Docker installed, pass `--use_local_docker`;
+    prebuilt per-instance images pull from `jefzda/sweap-images`.
 
 ## Steps
 
@@ -23,7 +30,8 @@ its own control.
 3. **Headline (~$150-600 depending on model/turn cap):**
    `python3 bench/swebench_pro_ab.py --sample 75 --model claude-sonnet-5`
    Resumable — rerun the same command to continue after interruptions.
-4. **Score each arm** with the official harness (from its repo):
+4. **Score each arm** with the official harness (from its repo; Modal by
+   default, add `--use_local_docker` to run on local Docker instead):
    `python swe_bench_pro_eval.py --patch_path <gio>/bench/out/predictions_baseline.json --output_dir out_baseline --scripts_dir run_scripts --dockerhub_username jefzda`
    (repeat for `predictions_gio.json` -> `out_gio`)
 5. **Report:**
