@@ -19,3 +19,4 @@ bench/REPORT.md
 # Self-benchmark reports (regenerable; run bench/self_benchmark.py or /gio-benchmark)
 bench/SELF_REPORT.md
 GIO_SELF_REPORT.md
+GIO_SAVINGS.html

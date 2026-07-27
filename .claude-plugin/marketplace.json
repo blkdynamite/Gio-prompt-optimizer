@@ -8,8 +8,8 @@
     {
       "name": "gio",
       "source": "./",
-      "description": "Vibe-coding sidekick: token-reduction playbook, hybrid semantic code retrieval, impact calculator, decision memory, code review, codebase map.",
-      "version": "0.2.0",
+      "description": "Vibe-coding sidekick: token-reduction playbook, hybrid semantic code retrieval, impact calculator, /gio-benchmark savings dashboard, decision memory, code review, codebase map.",
+      "version": "0.3.0",
       "author": {
         "name": "blkdynamite"
       },

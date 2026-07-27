@@ -52,7 +52,8 @@ inside a project with the plugin installed:
 or directly: `python3 bench/self_benchmark.py --root /path/to/repo`. It builds
 Gio's index, runs probe questions, and reports the **input-token reduction** —
 Gio's targeted spans vs. reading the whole files — as a ratio, a token count, and
-a projected dollar figure, written to a shareable `GIO_SELF_REPORT.md`. Add
+a projected dollar figure, written to a shareable `GIO_SELF_REPORT.md` (and, with
+`--html`, a self-contained `GIO_SAVINGS.html` dashboard you can screenshot). Add
 `--with-usage` for real savings from the user's own Claude Code logs.
 
 **Repo size matters:** below ~2–4k LOC the whole repo is cheap to read (modest

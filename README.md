@@ -197,8 +197,10 @@ python3 bench/self_benchmark.py --root /path/to/your/repo
 No API key, no labels, nothing leaves your machine. It builds Gio's index, runs a
 set of probe questions, and reports how many **input tokens** Gio's targeted
 retrieval feeds into context versus reading the whole files — a ratio, a token
-count, and a projected dollar figure — then writes a shareable `GIO_SELF_REPORT.md`.
-Add `--with-usage` to fold in real savings from your own Claude Code logs.
+count, and a projected dollar figure. It writes a shareable `GIO_SELF_REPORT.md`
+and, with `--html`, a self-contained **savings dashboard** (`GIO_SAVINGS.html`)
+you can open or screenshot. Add `--with-usage` to fold in real savings from your
+own Claude Code logs.
 
 **What to expect by repo size:** below ~2–4k LOC the whole repo is cheap to read,
 so absolute savings are modest (the ratio still holds). The sweet spot is

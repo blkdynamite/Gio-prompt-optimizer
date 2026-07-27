@@ -10,8 +10,14 @@ Steps:
 1. Run the self-benchmark against the user's current project (no API key needed):
 
    ```bash
-   python3 "${CLAUDE_PLUGIN_ROOT}/bench/self_benchmark.py" --root . --out ./GIO_SELF_REPORT.md $ARGUMENTS
+   python3 "${CLAUDE_PLUGIN_ROOT}/bench/self_benchmark.py" --root . \
+     --out ./GIO_SELF_REPORT.md --html ./GIO_SAVINGS.html $ARGUMENTS
    ```
+
+   This also writes `GIO_SAVINGS.html` — a self-contained, screenshot-able
+   savings dashboard (hero ratio, tokens/$ saved, "more questions per budget",
+   and a per-question Gio-vs-whole-files bar chart). Point the user at it to
+   open or share.
 
    It builds Gio's local index, runs a set of probe questions, and compares the
    tokens Gio's targeted spans feed into context vs. reading the whole files

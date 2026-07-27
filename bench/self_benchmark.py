@@ -57,6 +57,126 @@ def human(n: int) -> str:
     return f"{n:,}"
 
 
+def esc(s: str) -> str:
+    return (s.replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;").replace('"', "&quot;"))
+
+
+# Theme-aware CSS. Palette from the data-viz reference instance: Gio = blue
+# (categorical slot 1), naive = orange (slot 2) — a CVD-safe adjacent pair.
+# Every bar is direct-labeled so identity never rests on color alone.
+_CSS = """
+:root {
+  --plane: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e;
+  --muted: #898781; --hair: #e1e0d9; --ring: rgba(11,11,11,.10);
+  --gio: #2a78d6; --naive: #eb6834; --good: #006300;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --plane: #0d0d0d; --surface: #1a1a19; --ink: #fff; --ink2: #c3c2b7;
+    --muted: #898781; --hair: #2c2c2a; --ring: rgba(255,255,255,.10);
+    --gio: #3987e5; --naive: #d95926; --good: #0ca30c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--plane); color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 40px 24px 56px; }
+.card {
+  background: var(--surface); border: 1px solid var(--ring); border-radius: 14px;
+  padding: 28px; margin-bottom: 20px;
+}
+.brand { color: var(--ink2); font-weight: 600; letter-spacing: .01em; margin: 0 0 4px; }
+.sub { color: var(--muted); font-size: 14px; margin: 0; }
+.hero { display: flex; align-items: baseline; gap: 14px; margin: 8px 0 2px; }
+.hero .num { font-size: 68px; font-weight: 700; line-height: 1; color: var(--gio); }
+.hero .cap { font-size: 17px; color: var(--ink2); max-width: 380px; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 18px; }
+.tile .v { font-size: 30px; font-weight: 700; }
+.tile .v.good { color: var(--good); }
+.tile .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
+h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink2); margin: 0 0 16px; }
+.legend { display: flex; gap: 18px; margin-bottom: 18px; font-size: 13px; color: var(--ink2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw.gio { background: var(--gio); } .sw.naive { background: var(--naive); }
+.q { margin-bottom: 16px; }
+.q .ql { font-size: 13px; color: var(--ink2); margin-bottom: 6px; }
+.track { display: grid; gap: 5px; }
+.bar { height: 18px; border-radius: 4px; display: flex; align-items: center;
+  justify-content: flex-end; min-width: 44px; }
+.bar.gio { background: var(--gio); } .bar.naive { background: var(--naive); }
+.bar .t { color: #fff; font-size: 11px; font-weight: 600; padding-right: 7px;
+  font-variant-numeric: tabular-nums; }
+.note { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.foot { color: var(--muted); font-size: 12px; margin-top: 22px; }
+"""
+
+
+def render_html(root, chunks, files, rows, gio_total, naive_total, saved,
+                overall, saved_usd, model, n_questions, truncated, small):
+    maxv = max([n for _, _, n, _ in rows] + [1])
+    bars = []
+    for q, gio, naive, ratio in rows:
+        if not gio and not naive:
+            continue
+        gw = max(gio / maxv * 100, 4)
+        nw = max(naive / maxv * 100, 4)
+        bars.append(
+            f'<div class="q"><div class="ql">{esc(q)}</div>'
+            f'<div class="track">'
+            f'<div class="bar gio" style="width:{gw:.1f}%" '
+            f'title="Gio: {human(gio)} tokens"><span class="t">{human(gio)}</span></div>'
+            f'<div class="bar naive" style="width:{nw:.1f}%" '
+            f'title="Whole files: {human(naive)} tokens"><span class="t">{human(naive)}</span></div>'
+            f'</div></div>')
+
+    banner = ""
+    if truncated:
+        banner = ('<p class="note">⚠️ This repo hit Gio’s 50k-chunk '
+                  'index cap — numbers cover the indexed portion.</p>')
+    elif small:
+        banner = ('<p class="note">ℹ️ Small repo — the whole thing is '
+                  'cheap to read, so absolute savings are modest here. Gio shines '
+                  'most on ~10k–200k-LOC codebases.</p>')
+
+    overall_s = f"{overall:.1f}×" if overall else "—"
+    return f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gio savings — {esc(root.name)}</title>
+<style>{_CSS}</style></head>
+<body><div class="wrap">
+  <div class="card">
+    <p class="brand">Gio \U0001f331 — token savings</p>
+    <p class="sub">Repo <code>{esc(root.name)}</code> · {human(chunks)} chunks · {human(files)} files · {n_questions} probe questions</p>
+    <div class="hero"><div class="num">{overall_s}</div>
+      <div class="cap">fewer input tokens than reading the whole files an answer lives in</div></div>
+    {banner}
+  </div>
+  <div class="tiles">
+    <div class="tile"><div class="v good">{human(saved)}</div><div class="l">input tokens saved (this run)</div></div>
+    <div class="tile"><div class="v good">${saved_usd:.2f}</div><div class="l">saved at {esc(model)} input pricing</div></div>
+    <div class="tile"><div class="v">{overall_s}</div><div class="l">more questions in the same budget</div></div>
+  </div>
+  <div class="card">
+    <h2>Per question — tokens read</h2>
+    <div class="legend">
+      <span><i class="sw gio"></i>Gio (targeted spans)</span>
+      <span><i class="sw naive"></i>Reading whole files</span>
+    </div>
+    {''.join(bars)}
+    <p class="foot">Gio fed {human(gio_total)} tokens total vs {human(naive_total)} to read whole files.
+    Deterministic, local, char/4 token estimate — no API key. Retrieval quality (hit@k) is a
+    separate labeled eval (scripts/eval_retrieval.py).</p>
+  </div>
+</div></body></html>
+"""
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(
         description=__doc__,
@@ -74,6 +194,8 @@ def main(argv=None):
                    help="Also run scripts/impact.py for real-session savings.")
     p.add_argument("--out", default=str(REPO_ROOT / "bench" / "SELF_REPORT.md"),
                    help="Where to write the shareable markdown report.")
+    p.add_argument("--html",
+                   help="Also write a self-contained HTML savings dashboard here.")
     args = p.parse_args(argv)
 
     root = Path(args.root).expanduser().resolve()
@@ -165,6 +287,14 @@ def main(argv=None):
 
     report = "\n".join(lines) + "\n"
     Path(args.out).write_text(report)
+
+    if args.html:
+        html = render_html(root, chunks, files, rows, gio_total, naive_total,
+                           saved, overall, saved_usd, args.model, len(questions),
+                           bool(build.get("truncated")), chunks < SMALL_REPO_CHUNKS)
+        Path(args.html).write_text(html)
+        print(f"Wrote {args.html}")
+
     print()
     if overall:
         print(f"Overall: {overall:.1f}x fewer input tokens "
