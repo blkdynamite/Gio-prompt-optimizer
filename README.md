@@ -151,13 +151,17 @@ time — never at query time, and never in `--backend none` mode.
 Every retrieval claim is backed by a published eval
 ([`scripts/eval_retrieval.py`](scripts/eval_retrieval.py) over the labeled
 golden set in [`eval/`](eval/)) — deterministic, free, and reproducible on
-your machine. Current committed results
-(full table in [`eval/RESULTS.md`](eval/RESULTS.md)):
+your machine and re-verified in CI on every push (full table in
+[`eval/RESULTS.md`](eval/RESULTS.md); the CI run uploads it as an artifact):
 
 | config | hit@1 | hit@5 | MRR@10 | tokens-to-task | p50 latency |
 |---|---|---|---|---|---|
-| lexical (BM25) | 50% | 83% | 0.63 | 512 | 11 ms |
+| lexical (BM25) | 68% | 93% | 0.79 | 458 | ~20 ms |
 | vector / hybrid (embedding backends) | *pending: run locally* | | | | |
+
+Measured over 28 golden queries across this repo plus two pinned external
+repos (`click`, `express`); by query type, lexical hit@5 is 89% conceptual,
+100% cross-file, 100% identifier.
 
 The embedding rows need a one-time model download, so they are generated on
 your machine: `python3 scripts/eval_retrieval.py --backends model2vec` (add
@@ -172,6 +176,36 @@ deterministic retrieval gate on every push/PR, Promptfoo answer-quality comments
 on PRs, and an on-demand SWE-Bench Pro A/B — so you don't have to run anything
 locally. See [`bench/BENCHMARKING.md`](bench/BENCHMARKING.md) for how it works and
 which eval tool to use for which audience.
+
+---
+
+## Benchmark it on your own repo
+
+Want to see the token savings on *your* code (or hand it to a friend)? Install the
+plugin, then from inside your project run:
+
+```
+/gio-benchmark
+```
+
+Or without the plugin:
+
+```bash
+python3 bench/self_benchmark.py --root /path/to/your/repo
+```
+
+No API key, no labels, nothing leaves your machine. It builds Gio's index, runs a
+set of probe questions, and reports how many **input tokens** Gio's targeted
+retrieval feeds into context versus reading the whole files — a ratio, a token
+count, and a projected dollar figure. It writes a shareable `GIO_SELF_REPORT.md`
+and, with `--html`, a self-contained **savings dashboard** (`GIO_SAVINGS.html`)
+you can open or screenshot. Add `--with-usage` to fold in real savings from your
+own Claude Code logs.
+
+**What to expect by repo size:** below ~2–4k LOC the whole repo is cheap to read,
+so absolute savings are modest (the ratio still holds). The sweet spot is
+**~10k–200k LOC**, where reading whole files costs ~5–18× more than Gio's spans.
+On this repo it's ~5× fewer input tokens across the probe set.
 
 ---
 
