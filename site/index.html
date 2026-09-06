@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gio — make every Claude Code token count</title>
+<meta name="description" content="Gio is a free, open-source Claude Code plugin that finds the exact lines a task needs instead of reading whole files. Measured 6–14× fewer input tokens. Runs locally, no API key.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Gio — make every Claude Code token count">
+<meta property="og:description" content="Free, open-source Claude Code plugin. 13.6× fewer input tokens on Click, 9.8× on FastAPI. Runs locally, no API key.">
+<meta property="og:image" content="/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root {
+  --plane: #f9f9f7; --surface: #ffffff; --ink: #0b0b0b; --ink2: #4d4c48;
+  --muted: #7d7b75; --hair: #e3e2db; --ring: rgba(11,11,11,.10);
+  --accent: #1f7a3a; --accent-ink: #ffffff; --gio: #2a78d6; --naive: #eb6834;
+  --code: #f1f1ed;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --plane: #0d0d0d; --surface: #171716; --ink: #f4f4f0; --ink2: #c3c2b7;
+    --muted: #8d8b84; --hair: #2a2a28; --ring: rgba(255,255,255,.10);
+    --accent: #3fb463; --accent-ink: #06130a; --gio: #4a92e8; --naive: #e6703f;
+    --code: #202020;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--plane); color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55; font-size: 17px; -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 22px; }
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+.brand { font-weight: 700; letter-spacing: .01em; text-decoration: none; display: flex; gap: 8px; align-items: center; }
+nav a { text-decoration: none; color: var(--ink2); margin-left: 20px; font-size: 15px; }
+nav a:hover { color: var(--ink); }
+.hero { padding: 56px 0 40px; }
+.kicker { color: var(--accent); font-weight: 600; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 14px; }
+h1 { font-size: clamp(34px, 5.4vw, 58px); line-height: 1.06; letter-spacing: -.02em; margin: 0 0 18px; max-width: 14ch; }
+.lede { font-size: clamp(18px, 2.2vw, 21px); color: var(--ink2); max-width: 58ch; margin: 0 0 28px; }
+.install {
+  background: var(--code); border: 1px solid var(--ring); border-radius: 12px;
+  padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+  max-width: 640px;
+}
+.install pre { margin: 0; white-space: pre; overflow-x: auto; line-height: 1.6; }
+.btn {
+  appearance: none; border: 0; border-radius: 9px; padding: 10px 14px; font: inherit; font-size: 15px;
+  font-weight: 600; cursor: pointer; background: var(--accent); color: var(--accent-ink);
+}
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--hair); }
+.btn:focus-visible { outline: 2px solid var(--gio); outline-offset: 2px; }
+.hero .links { margin-top: 14px; font-size: 15px; color: var(--muted); }
+.hero .links a { color: var(--ink2); }
+.proofline { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 30px; color: var(--ink2); font-size: 15px; }
+.proofline b { color: var(--ink); font-size: 22px; margin-right: 6px; letter-spacing: -.01em; }
+section { padding: 44px 0; border-top: 1px solid var(--hair); }
+h2 { font-size: clamp(24px, 3.2vw, 32px); letter-spacing: -.015em; margin: 0 0 10px; }
+.sub { color: var(--ink2); max-width: 64ch; margin: 0 0 26px; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 14px; padding: 22px; }
+.card h3 { margin: 0 0 8px; font-size: 17px; }
+.card p { margin: 0; color: var(--ink2); font-size: 15.5px; }
+.card .big { font-size: 40px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; color: var(--gio); margin-bottom: 6px; }
+.card .src { display: block; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.card .src a { color: var(--muted); }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--hair); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+td.win { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--ring); border-radius: 14px; background: var(--surface); }
+.tablewrap table { min-width: 620px; }
+.caveat { font-size: 14px; color: var(--muted); margin-top: 12px; max-width: 70ch; }
+.frame { border: 1px solid var(--ring); border-radius: 14px; overflow: hidden; background: var(--surface); }
+.frame iframe { display: block; width: 100%; height: 720px; border: 0; }
+.steps { counter-reset: s; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.step { position: relative; padding: 22px 22px 22px 60px; background: var(--surface); border: 1px solid var(--ring); border-radius: 14px; }
+.step::before { counter-increment: s; content: counter(s); position: absolute; left: 20px; top: 20px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 700; display: grid; place-items: center; font-size: 14px; }
+.step h3 { margin: 0 0 6px; font-size: 17px; }
+.step p { margin: 0; color: var(--ink2); font-size: 15.5px; }
+.notify { background: var(--surface); border: 1px solid var(--ring); border-radius: 16px; padding: 28px; display: grid; gap: 18px; grid-template-columns: 1.2fr 1fr; align-items: center; }
+.notify form { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+.notify input { font: inherit; padding: 11px 13px; border-radius: 9px; border: 1px solid var(--hair); background: var(--plane); color: var(--ink); min-width: 0; }
+.notify input:focus-visible { outline: 2px solid var(--gio); outline-offset: 1px; border-color: transparent; }
+.notify .msg { grid-column: 1 / -1; font-size: 14px; color: var(--muted); min-height: 1.4em; margin: 0; }
+.notify .msg.ok { color: var(--accent); }
+.notify .msg.err { color: var(--naive); }
+footer { padding: 34px 0 48px; border-top: 1px solid var(--hair); color: var(--muted); font-size: 14px; }
+footer .row { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-bottom: 12px; }
+footer a { color: var(--ink2); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (max-width: 720px) {
+  .install { grid-template-columns: 1fr; }
+  .notify { grid-template-columns: 1fr; }
+  .notify form { grid-template-columns: 1fr; }
+  .frame iframe { height: 620px; }
+  nav a { margin-left: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#"><span aria-hidden="true">🌱</span> Gio</a>
+    <nav aria-label="Primary">
+      <a href="#proof">Proof</a>
+      <a href="#how">How it works</a>
+      <a href="https://github.com/blkdynamite/Gio-prompt-optimizer">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" style="border-top:0">
+      <p class="kicker">Free · open source · Claude Code plugin</p>
+      <h1>Make every Claude Code token count.</h1>
+      <p class="lede">Every session has a budget. Gio finds the exact lines a task needs instead of reading whole files, hands big lookups to helper agents, and keeps your context small — so a capped session gets more done and your bill shrinks.</p>
+
+      <div class="install" id="install">
+        <pre><code>/plugin marketplace add blkdynamite/Gio-prompt-optimizer
+/plugin install gio@blkdynamite-plugins</code></pre>
+        <button class="btn" id="copy" type="button" data-copy="/plugin marketplace add blkdynamite/Gio-prompt-optimizer&#10;/plugin install gio@blkdynamite-plugins">Copy</button>
+      </div>
+      <p class="links">Paste inside Claude Code. Nothing leaves your machine, no API key, no account. <a href="https://github.com/blkdynamite/Gio-prompt-optimizer#install-2-minutes">Manual install</a> · <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/CHANGELOG.md">v0.4.0</a></p>
+
+      <div class="proofline" aria-label="Headline measurements">
+        <span><b>13.6×</b> fewer input tokens on Click</span>
+        <span><b>9.8×</b> on FastAPI</span>
+        <span><b>−89%</b> context tokens on a real fix</span>
+      </div>
+    </section>
+
+    <section id="proof">
+      <h2>Measured, not promised</h2>
+      <p class="sub">Every number here comes from a script in the repo that you can run yourself, with the caveats stated next to it.</p>
+
+      <div class="grid">
+        <div class="card">
+          <div class="big">13.6×</div>
+          <h3>Fewer input tokens on Click</h3>
+          <p>Eight generic questions (“where is the main entry point”, “where are errors handled”…) against <code>pallets/click</code> 8.1.7: Gio’s spans fed 21,858 tokens; reading the whole files would have been 296,388.</p>
+          <span class="src">Same run: 9.8× on <code>fastapi</code> 0.115.0, 6.0× on Gio’s own small repo. <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/bench/self_benchmark.py">bench/self_benchmark.py</a>, 2026-09-06.</span>
+        </div>
+        <div class="card">
+          <div class="big">87%</div>
+          <h3>Retrieval hit@5, zero installs</h3>
+          <p>Across 77 labeled queries on three repos, the right code is in Gio’s top five results 87% of the time (100% for identifiers and cross-file lookups) using only the built-in lexical ranker.</p>
+          <span class="src">Deterministic, CI-gated at 80%. <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/eval/RESULTS.md">eval/RESULTS.md</a></span>
+        </div>
+        <div class="card">
+          <div class="big">−45% / −89%</div>
+          <h3>Context tokens on real fixes</h3>
+          <p>Two coding tasks on Click run with and without Gio, same model, patches applied and tested. Task B: 4 turns for 11¢ with Gio versus 28 turns and 87¢ without.</p>
+          <span class="src">A demonstration (two tasks, one run each), not a statistical benchmark. <a href="https://github.com/blkdynamite/Gio-prompt-optimizer#does-it-actually-cut-tokens-a-measured-demo">Details</a></span>
+        </div>
+      </div>
+
+      <h3 style="margin:36px 0 8px">Two real tasks, with and without Gio</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Task on Click <em>(patches verified)</em></th><th>Without Gio</th><th>With Gio</th><th>Reduction</th></tr></thead>
+          <tbody>
+            <tr><td><b>A</b> — add a “did you mean?” hint to an error<br><span style="color:var(--muted);font-size:13px">both fixes correct</span></td><td>1.15M ctx tokens · $0.52 · 27 turns</td><td>636K · $0.33 · 16 turns</td><td class="win">−45% tokens · −37% cost</td></tr>
+            <tr><td><b>B</b> — guard an invalid option combination<br><span style="color:var(--muted);font-size:13px">Gio matched the spec; the plain run reinterpreted it</span></td><td>1.37M ctx tokens · $0.87 · 28 turns</td><td>147K · $0.11 · 4 turns</td><td class="win">−89% tokens · −88% cost</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="caveat">“ctx tokens” is the input plus cached context the model processes each turn, read from Claude Code’s own logs. Savings grow with repo size; on tiny repos the gap nearly vanishes. For third-party-scored numbers across many issues there is a paired SWE-Bench Pro harness in <code>bench/</code>.</p>
+
+      <h3 style="margin:36px 0 8px">The dashboard <code>/gio-benchmark</code> writes for your repo</h3>
+      <p class="sub" style="margin-bottom:14px">This is the actual file the Click run produced. Run it on your own code and screenshot yours.</p>
+      <div class="frame"><iframe src="dashboard-click.html" title="Gio savings dashboard for the click repository"></iframe></div>
+    </section>
+
+    <section id="how">
+      <h2>How it works</h2>
+      <p class="sub">Gio is a playbook Claude follows plus a few local Python scripts. No model calls of its own, no daemon, no account.</p>
+      <div class="steps">
+        <div class="step">
+          <h3>Locate before you read</h3>
+          <p>A local index (BM25, optional on-device embeddings) turns “where is login handled” into exact <code>file:line</code> spans. Claude reads those lines, not the file.</p>
+        </div>
+        <div class="step">
+          <h3>Delegate the sweeps</h3>
+          <p>Broad searches run in helper agents that return only the conclusion, so your main context stays small and every later turn is cheaper.</p>
+        </div>
+        <div class="step">
+          <h3>Keep the project sane</h3>
+          <p>A <code>DECISIONS.md</code> log so choices aren’t re-argued, reuse-over-duplicate habits, and a six-phase review before anything merges.</p>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:16px">
+        <div class="card">
+          <h3>Private by construction</h3>
+          <p>Indexes live in your repo. The impact calculator reads the usage logs Claude Code already keeps on your disk. The only network access is an optional one-time embedding model download.</p>
+        </div>
+        <div class="card">
+          <h3>See what you saved</h3>
+          <p>Ask <em>“how much have I saved?”</em> and Gio reports real spend from your logs plus an estimated saving versus a whole-file workflow, clearly labeled as an estimate.</p>
+        </div>
+        <div class="card">
+          <h3>MIT licensed</h3>
+          <p>Fork it, ship it inside your team, read every line. Issues and pull requests are open on <a href="https://github.com/blkdynamite/Gio-prompt-optimizer">GitHub</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="teams">
+      <div class="notify">
+        <div>
+          <h2 style="font-size:24px">Gio for teams is next</h2>
+          <p class="sub" style="margin:0">One savings dashboard across every developer on your Claude bill, shared indexes for big monorepos, and a savings report your manager can read. Leave an email and you’ll get one message when it ships.</p>
+        </div>
+        <form id="notify-form" novalidate>
+          <label class="sr" for="email">Email address</label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com" required>
+          <button class="btn" type="submit" id="notify-btn">Notify me</button>
+          <p class="msg" id="notify-msg" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="row">
+      <a href="https://github.com/blkdynamite/Gio-prompt-optimizer">GitHub</a>
+      <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/eval/RESULTS.md">Eval results</a>
+      <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/SECURITY.md">Security</a>
+      <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/LICENSE">MIT license</a>
+    </div>
+    <p style="margin:0">Gio is an independent open-source project and is not affiliated with or endorsed by Anthropic. “Claude” and “Claude Code” are trademarks of Anthropic, PBC.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var copy = document.getElementById('copy');
+  copy.addEventListener('click', function () {
+    var text = copy.getAttribute('data-copy');
+    var done = function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy'; }, 1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(text); done(); });
+    } else { fallback(text); done(); }
+    function fallback(t) {
+      var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', '');
+      ta.style.position = 'absolute'; ta.style.left = '-9999px'; document.body.appendChild(ta);
+      ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+    }
+  });
+
+  // Klaviyo client-side subscribe. The company id is a public key by design.
+  var COMPANY_ID = 'Vfdr6b', LIST_ID = 'W3Cp9K';
+  var form = document.getElementById('notify-form');
+  var input = document.getElementById('email');
+  var btn = document.getElementById('notify-btn');
+  var msg = document.getElementById('notify-msg');
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var email = (input.value || '').trim();
+    msg.className = 'msg';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Please enter a valid email address.'; msg.className = 'msg err'; input.focus(); return; }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    var body = { data: { type: 'subscription', attributes: {
+      custom_source: 'gio landing page',
+      profile: { data: { type: 'profile', attributes: { email: email } } } },
+      relationships: { list: { data: { type: 'list', id: LIST_ID } } } } };
+    fetch('https://a.klaviyo.com/client/subscriptions/?company_id=' + COMPANY_ID, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'revision': '2024-10-15' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      if (r.status === 202 || r.ok) { msg.textContent = 'Thanks — you’re on the list.'; msg.className = 'msg ok'; input.value = ''; }
+      else { throw new Error('status ' + r.status); }
+    }).catch(function () {
+      msg.textContent = 'Something went wrong. Star the repo on GitHub and watch releases instead.'; msg.className = 'msg err';
+    }).then(function () { btn.disabled = false; btn.textContent = 'Notify me'; });
+  });
+})();
+</script>
+</body>
+</html>

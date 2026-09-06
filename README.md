@@ -3,13 +3,28 @@
 **Your vibe-coding sidekick. Lean, clean, and easy on the planet.**
 
 [![benchmark](https://github.com/blkdynamite/Gio-prompt-optimizer/actions/workflows/benchmark.yml/badge.svg)](https://github.com/blkdynamite/Gio-prompt-optimizer/actions/workflows/benchmark.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![plugin 0.4.0](https://img.shields.io/badge/claude%20code%20plugin-0.4.0-blue.svg)](.claude-plugin/plugin.json)
 
-Gio is a [Claude Code](https://claude.com/claude-code) skill for people building
-with AI — especially if you're newer to coding. It quietly does the things
-experienced engineers do automatically: spend fewer tokens, keep your project
-tidy, remember why you made each decision, and check the work before it ships.
+Gio is a free, open-source [Claude Code](https://claude.com/claude-code) plugin
+that makes every token go further. Instead of reading whole files, it finds the
+exact lines a task needs, hands big lookups to helper agents, and keeps your
+context small — so a capped session gets more work done and your bill shrinks.
+It also keeps your project tidy, remembers why you made each decision, and
+checks the work before it ships.
 
-Less spaghetti. A smaller bill. A lighter footprint. Good vibes.
+```
+/plugin marketplace add blkdynamite/Gio-prompt-optimizer
+/plugin install gio@blkdynamite-plugins
+```
+
+**Measured, not promised:** 13.6× fewer input tokens on
+[Click](https://github.com/pallets/click), 9.8× on
+[FastAPI](https://github.com/fastapi/fastapi), and 45–89% fewer context tokens
+on real coding tasks run with and without Gio. Details and caveats below;
+everything reproduces on your machine with no API key.
+
+Landing page source lives in [`site/`](site/) (static, deploys to Vercel as-is).
 
 ---
 
@@ -62,34 +77,36 @@ Claude Code logs — nothing leaves your machine.)*
 
 ## Install (2 minutes)
 
-**As a Claude Code plugin (easiest):** inside Claude Code, run
+Inside Claude Code, run:
 
 ```
 /plugin marketplace add blkdynamite/Gio-prompt-optimizer
 /plugin install gio@blkdynamite-plugins
 ```
 
-**Or manually** — Gio is a folder of files Claude Code reads. Just put it
-where Claude Code looks for skills.
+That's it. Gio activates when it's relevant. Try: *"add a login screen"*,
+*"how much have I saved?"*, *"/gio-benchmark"*, or *"review my changes before I
+merge."* Update later with `/plugin marketplace update blkdynamite-plugins`.
 
-For all your projects:
+<details>
+<summary>Manual install (no plugin system)</summary>
 
-```bash
-git clone https://github.com/blkdynamite/Gio-prompt-optimizer.git
-mkdir -p ~/.claude/skills
-cp -r Gio-prompt-optimizer ~/.claude/skills/gio
-```
-
-For one project (and to share with teammates):
+Gio is a folder of files Claude Code reads. Put it where Claude Code looks
+for skills:
 
 ```bash
-mkdir -p .claude/skills
-cp -r /path/to/Gio-prompt-optimizer .claude/skills/gio
+# for all your projects
+git clone --depth 1 https://github.com/blkdynamite/Gio-prompt-optimizer.git ~/.claude/skills/gio
+
+# or for one project (and to share with teammates)
+git clone --depth 1 https://github.com/blkdynamite/Gio-prompt-optimizer.git .claude/skills/gio
 ```
 
-That's it. Open Claude Code and just build — Gio activates when it's relevant.
-Try: *"add a login screen"*, *"how much have I saved?"*, or *"review my changes
-before I merge."*
+Two differences from the plugin install: the `/gio-benchmark` slash command is
+plugin-only (run `python3 ~/.claude/skills/gio/bench/self_benchmark.py --root . --html`
+instead), and where the docs say `${CLAUDE_PLUGIN_ROOT}`, use the folder you
+cloned into.
+</details>
 
 ---
 
@@ -139,8 +156,12 @@ Pro.
 
 ## See your savings anytime
 
+Inside Claude Code, just ask *"how much have I saved?"*. From a terminal, run
+the calculator from wherever Gio lives (a clone of this repo, or
+`~/.claude/skills/gio`):
+
 ```bash
-python3 scripts/impact.py            # last 30 days
+python3 scripts/impact.py             # last 30 days
 python3 scripts/impact.py --since all # all time
 python3 scripts/impact.py --help      # all options
 ```
@@ -182,17 +203,19 @@ your machine and re-verified in CI on every push (full table in
 
 | config | hit@1 | hit@5 | MRR@10 | tokens-to-task | p50 latency |
 |---|---|---|---|---|---|
-| lexical (BM25) | 68% | 93% | 0.79 | 458 | ~20 ms |
-| vector / hybrid (embedding backends) | *pending: run locally* | | | | |
+| lexical (BM25), zero installs | 64% | 87% | 0.74 | 557 | ~20 ms |
 
-Measured over 28 golden queries across this repo plus two pinned external
-repos (`click`, `express`); by query type, lexical hit@5 is 89% conceptual,
-100% cross-file, 100% identifier.
+Measured over 77 golden queries across this repo plus two pinned external
+repos (`click`, `express`); by query type, lexical hit@5 is 84% conceptual,
+100% cross-file, 100% identifier. Regenerated at every release; CI fails
+below 80% hit@5.
 
-The embedding rows need a one-time model download, so they are generated on
-your machine: `python3 scripts/eval_retrieval.py --backends model2vec` (add
-`,fastembed,st` to compare backends — the measured winner is the right
-default for *your* repos). There's also an opt-in
+Embedding backends are opt-in because they need a one-time model download.
+Compare them on your own machine with
+`python3 scripts/eval_retrieval.py --backends model2vec,fastembed,st` — in
+our 28-query run `fastembed` was the strongest and hybrid fusion showed no
+measured benefit over the best single ranker
+([why](references/fusion-analysis.md)), which is why lexical is the default. There's also an opt-in
 [promptfoo](https://promptfoo.dev) harness in
 [`eval/promptfoo/`](eval/promptfoo/) that grades end-to-end answer quality
 with an LLM judge using your own API key.
@@ -214,10 +237,10 @@ plugin, then from inside your project run:
 /gio-benchmark
 ```
 
-Or without the plugin:
+Or without the plugin, from a clone of this repo:
 
 ```bash
-python3 bench/self_benchmark.py --root /path/to/your/repo
+python3 bench/self_benchmark.py --root /path/to/your/repo --html
 ```
 
 No API key, no labels, nothing leaves your machine. It builds Gio's index, runs a
@@ -228,10 +251,16 @@ and, with `--html`, a self-contained **savings dashboard** (`GIO_SAVINGS.html`)
 you can open or screenshot. Add `--with-usage` to fold in real savings from your
 own Claude Code logs.
 
-**What to expect by repo size:** below ~2–4k LOC the whole repo is cheap to read,
-so absolute savings are modest (the ratio still holds). The sweet spot is
-**~10k–200k LOC**, where reading whole files costs ~5–18× more than Gio's spans.
-On this repo it's ~5× fewer input tokens across the probe set.
+**What to expect by repo size** (default 8 probe questions, measured 2026-09-06):
+
+| repo | size | fewer input tokens |
+|---|---|---|
+| this repo | 32 files, 411 chunks | 6.0× |
+| [click 8.1.7](https://github.com/pallets/click) | 75 files, ~10k LOC | 13.6× |
+| [fastapi 0.115.0](https://github.com/fastapi/fastapi) | 2,122 files, 15.7k chunks | 9.8× |
+
+Below ~2–4k LOC the whole repo is cheap to read, so absolute savings are modest
+(the ratio still holds). The sweet spot is **~10k–200k LOC**.
 
 ---
 
@@ -257,3 +286,7 @@ equivalents (US EPA).
 ## License
 
 MIT — see [LICENSE](LICENSE). Use it, fork it, share it. 🌍
+
+Gio is an independent open-source project and is not affiliated with or
+endorsed by Anthropic. "Claude" and "Claude Code" are trademarks of Anthropic,
+PBC. Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
