@@ -28,7 +28,7 @@ truth**:
    still matches the map before you reason about or change it.
 3. **Heal** — if the span doesn't match (symbol moved/renamed/gone), fall back to
    `Grep` for the symbol, and regenerate the map (`python3
-   scripts/codebase_map.py`) so the next lookup is correct.
+   "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py"`) so the next lookup is correct.
 
 > **Token note:** on a *small* repo, reading the whole `CODEBASE_MAP.md` can cost
 > more than just grepping — measured at ~11% worse than plain search. `--find`
@@ -51,14 +51,14 @@ staleness, because you always read ground truth before acting.
 ## Generating and checking
 
 ```bash
-python3 scripts/codebase_map.py                 # write CODEBASE_MAP.md + .codebase-map.json
-python3 scripts/codebase_map.py --find cost_usd # just the file:line of a symbol (cheapest lookup)
-python3 scripts/codebase_map.py --root .        # map a specific directory
-python3 scripts/codebase_map.py --check         # report drift vs the stored map; exit 1 if stale
-python3 scripts/codebase_map.py --stdout        # print the Markdown map without writing files
-python3 scripts/codebase_map.py --json          # machine-readable map to stdout
-python3 scripts/codebase_map.py --engine ast    # force an engine
-python3 scripts/codebase_map.py --help
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py"                 # write CODEBASE_MAP.md + .codebase-map.json
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --find cost_usd # just the file:line of a symbol (cheapest lookup)
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --root .        # map a specific directory
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --check         # report drift vs the stored map; exit 1 if stale
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --stdout        # print the Markdown map without writing files
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --json          # machine-readable map to stdout
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --engine ast    # force an engine
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --help
 ```
 
 `--find` matches functions, classes, methods (by basename), and module-level

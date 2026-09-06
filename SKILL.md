@@ -31,6 +31,21 @@ Tokens are the unit of cost, latency, **and** environmental footprint
 (datacenter energy + cooling water), so trimming wasted tokens helps the wallet
 and the planet at once.
 
+## Where Gio's files live
+
+Every command below runs from the **user's project directory**, so Gio's own
+scripts are addressed by absolute path:
+
+- Installed as a plugin (`/plugin install gio@blkdynamite-plugins`):
+  `${CLAUDE_PLUGIN_ROOT}` expands to Gio's install folder — use the commands
+  exactly as written.
+- Installed manually (a copy in `~/.claude/skills/gio` or `.claude/skills/gio`):
+  `${CLAUDE_PLUGIN_ROOT}` is not set. Substitute the folder that contains this
+  SKILL.md (for example `~/.claude/skills/gio`).
+
+Never `cd` into Gio's folder to run them — `--root` / the current directory is
+how the scripts know which project to work on.
+
 Gio has seven parts:
 
 1. **Token-reduction playbook** — habits to keep each query lean (below).
@@ -113,10 +128,10 @@ Run it when the user asks "how much have I saved / spent / how efficient am I?",
 or after a milestone.
 
 ```bash
-python3 scripts/impact.py                 # last 30 days
-python3 scripts/impact.py --since all      # all time
-python3 scripts/impact.py --json           # machine-readable
-python3 scripts/impact.py --help           # all flags
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/impact.py"                 # last 30 days
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/impact.py" --since all      # all time
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/impact.py" --json           # machine-readable
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/impact.py" --help           # all flags
 ```
 
 If no logs are found, tell the user where Claude Code writes them and that they
@@ -200,10 +215,10 @@ code's words — "login screen" finds the `auth` module).
    truth — always Read the span to verify before acting.
 
 ```bash
-python3 scripts/index.py                   # build/update retrieval index (incremental)
-python3 scripts/index.py --backend none    # lexical-only, zero installs
-python3 scripts/retrieve.py "where is X"   # hybrid query -> file:line spans
-python3 scripts/retrieve.py --decisions "task summary"  # related past decisions
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/index.py"                   # build/update retrieval index (incremental)
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/index.py" --backend none    # lexical-only, zero installs
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/retrieve.py" "where is X"   # hybrid query -> file:line spans
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/retrieve.py" --decisions "task summary"  # related past decisions
 ```
 
 Retrieval never blocks: missing embeddings, a stale index, or an offline
@@ -224,11 +239,11 @@ methodology: **`references/semantic-retrieval.md`**.
   they're installed.
 
 ```bash
-python3 scripts/codebase_map.py                 # write CODEBASE_MAP.md + .codebase-map.json
-python3 scripts/codebase_map.py --find cost_usd # just the file:line of a symbol (cheapest lookup)
-python3 scripts/codebase_map.py --check         # report drift vs the stored map (exit 1 if stale)
-python3 scripts/codebase_map.py --stdout        # print the map without writing files
-python3 scripts/codebase_map.py --help          # all flags
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py"                 # write CODEBASE_MAP.md + .codebase-map.json
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --find cost_usd # just the file:line of a symbol (cheapest lookup)
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --check         # report drift vs the stored map (exit 1 if stale)
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --stdout        # print the map without writing files
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --help          # all flags
 ```
 
 Full protocol, tiers, and tuning: **`references/codebase-map.md`**.
@@ -243,7 +258,7 @@ The split: **think on the best model available, execute mechanics on the
 cheapest that can't get it wrong.**
 
 - **Find the best available model** with
-  `python3 scripts/model_router.py --json` — it reads local evidence only
+  `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/model_router.py" --json` — it reads local evidence only
   (settings files, env vars, model ids in Claude Code's own usage logs) and
   returns a routing recommendation with a confidence level. It is
   **report-only**: evidence of access is not entitlement, so `unknown` →
