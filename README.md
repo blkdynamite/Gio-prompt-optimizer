@@ -156,9 +156,9 @@ Pro.
 
 ## See your savings anytime
 
-Inside Claude Code, just ask *"how much have I saved?"*. From a terminal, run
-the calculator from wherever Gio lives (a clone of this repo, or
-`~/.claude/skills/gio`):
+Inside Claude Code, just ask *"how much have I saved?"* and Gio runs the
+calculator for you, wherever it is installed. The terminal commands below are
+for a clone of this repo or a manual install (`~/.claude/skills/gio`):
 
 ```bash
 python3 scripts/impact.py             # last 30 days
@@ -237,7 +237,7 @@ plugin, then from inside your project run:
 /gio-benchmark
 ```
 
-Or without the plugin, from a clone of this repo:
+Or from a terminal, in a clone of this repo or a manual install:
 
 ```bash
 python3 bench/self_benchmark.py --root /path/to/your/repo --html
@@ -255,7 +255,7 @@ own Claude Code logs.
 
 | repo | size | fewer input tokens |
 |---|---|---|
-| this repo | 32 files, 411 chunks | 6.0× |
+| this repo | 35 files, 424 chunks | 6.1× |
 | [click 8.1.7](https://github.com/pallets/click) | 75 files, ~10k LOC | 13.6× |
 | [fastapi 0.115.0](https://github.com/fastapi/fastapi) | 2,122 files, 15.7k chunks | 9.8× |
 

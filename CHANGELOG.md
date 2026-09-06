@@ -19,7 +19,7 @@ First public release.
   measured benefit over the best single ranker (`references/fusion-analysis.md`,
   D-0008).
 - **Docs:** README rewritten for first-time visitors; measured Click demo and
-  self-benchmark numbers on `click` (13.6×) and `fastapi` (9.8×).
+  self-benchmark numbers on `click` (13.6×), `fastapi` (9.8×), and this repo (6.1×).
 - **CI:** unit tests run on every push and PR; pinned eval repos are cached;
   concurrent runs on the same ref are cancelled.
 - **Repo:** `CONTRIBUTING.md`, `SECURITY.md`, named copyright holder, landing
