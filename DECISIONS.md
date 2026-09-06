@@ -144,3 +144,27 @@ Consequences: Supersedes the emphasis in D-0005 on hybrid as the primary path;
 D-0002's default-backend choice is pending the 77-query embedding re-run. Any
 README claim about hybrid or the default backend must cite eval/RESULTS.md at
 77 queries.
+
+## D-0009 — Launch free and open; monetize later with something the files can't provide
+Date: 2026-09-06  ·  Status: Accepted
+
+Context: Gio was private with zero installs. A $5 one-time paywall on the
+plugin was considered as the launch model.
+Decision: Make the repo public and keep the plugin free under MIT. Use a static
+landing page (site/, Vercel) as the discovery funnel, with an email list
+(Klaviyo, list "Gio launch — notify me") for a future team tier. Lead every
+public claim with a number that reproduces from a script in the repo
+(bench/self_benchmark.py, scripts/eval_retrieval.py) and state its caveat next
+to it. Address all bundled scripts via ${CLAUDE_PLUGIN_ROOT} so the plugin
+install is the primary path.
+Alternatives: $5 paywalled download (rejected: MIT files are freely
+redistributable, checkout friction outweighs revenue at zero reach, and a
+paywall on a plugin repels the developers who would share it); tip jar at
+launch (deferred: no monetization links until there is an audience);
+GitHub Pages hosting (rejected in favor of Vercel by the maintainer).
+Consequences: Paid features must be things the files alone cannot do (hosted
+team dashboard, cross-repo savings history, prebuilt indexes for monorepos).
+Any number on the landing page or README must trace to a committed result
+(eval/RESULTS.md, a self-benchmark run) and be refreshed when those change.
+The plugin version must be bumped for every behavior change so installed users
+receive it.
