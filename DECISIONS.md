@@ -115,6 +115,8 @@ docs (rich in query vocabulary) were outranking the implementing code.
 Decision: Multiply both rankers' scores before fusion by a static prior:
 0.7 for test files, 0.9 for markdown, 1.0 for code (`rank_prior` in
 retrieval_lib.py). Restored hit@5 to 83% and improved vector/hybrid too.
+(Percentages in this entry are as measured on the 12-query gio slice of the
+original 28-query set on 2026-07-22; current numbers live in eval/RESULTS.md.)
 Alternatives: Query-intent classification (rejected: complexity without
 evidence it beats a constant); excluding tests entirely (rejected: sometimes
 they are the answer).

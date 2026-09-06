@@ -2,7 +2,7 @@
 
 Golden set expanded to **77 queries** (gio 27, click 25, express 25; every
 referenced path validated against the pinned repos). The lexical baseline
-below was produced offline; the embedding rows need a re-run on a machine with
+below was regenerated at HEAD; the embedding rows need a re-run on a machine with
 HuggingFace access (e.g. Colab) — this sandbox's proxy blocks model downloads.
 The lexical row is re-verified in CI on every push via the `retrieval-eval` job in
 [`.github/workflows/benchmark.yml`](../.github/workflows/benchmark.yml)
@@ -10,17 +10,18 @@ The lexical row is re-verified in CI on every push via the `retrieval-eval` job 
 
 ## Lexical baseline (77 queries)
 
-Generated 2026-07-23 — `python3 scripts/eval_retrieval.py --backends none`.
+Generated 2026-09-06 at commit `631985c` — `python3 scripts/eval_retrieval.py --backends none`
+(re-run at the current HEAD; the golden set has 27 gio, 25 click, 25 express queries).
 
 | config | hit@1 | hit@5 | MRR@10 | tokens-to-task | ctx-tokens@5 | p50 ms | p95 ms |
 |---|---|---|---|---|---|---|---|
-| lexical (BM25) | 62% | 88% | 0.74 | 545 | 1557 | 35 | 60 |
+| lexical (BM25) | 64% | 87% | 0.74 | 557 | 1565 | 19 | 26 |
 
 ### hit@5 by query type
 
 | config | conceptual | cross-file | identifier |
 |---|---|---|---|
-| lexical (BM25) | 85% | 100% | 100% |
+| lexical (BM25) | 84% | 100% | 100% |
 
 ## To fill in the embedding rows
 
