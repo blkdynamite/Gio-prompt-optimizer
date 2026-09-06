@@ -120,3 +120,25 @@ evidence it beats a constant); excluding tests entirely (rejected: sometimes
 they are the answer).
 Consequences: Priors are eval-tuned constants; changing them requires
 re-running scripts/eval_retrieval.py and updating eval/RESULTS.md.
+
+## D-0008 — Hybrid retrieval underperforms single-ranker; default to lexical
+Date: 2026-07-23  ·  Status: Accepted (pending 77-query embedding confirmation)
+
+Context: The first eval with real embedding backends (28 queries) showed hybrid
+RRF below the better of its two inputs, contradicting the spec's "hybrid beats
+either alone" thesis. We investigated bug vs noise vs design.
+Decision: Confirmed via code audit + reproduction (references/fusion-analysis.md)
+that rrf_fuse is correct — the shortfall is inherent to equal-weight RRF, which
+rewards agreement over peak confidence and averages a dominant retriever down.
+So: ship a single ranker as the default (lexical BM25 — free, fastest,
+competitive; fastembed as the optional higher-quality backend), keep hybrid
+available behind --mode hybrid but document it as "no measured benefit over the
+best single ranker on our set." Golden set expanded from 28 to 77 queries to
+tighten the estimates; re-run embeddings on Colab before finalizing.
+Alternatives: Per-query fusion weighting (rejected: needs query-intent
+classification, see D-0007); score-based fusion (rejected: needs tuning, see
+D-0005); keep model2vec default (rejected: it was the weakest backend measured).
+Consequences: Supersedes the emphasis in D-0005 on hybrid as the primary path;
+D-0002's default-backend choice is pending the 77-query embedding re-run. Any
+README claim about hybrid or the default backend must cite eval/RESULTS.md at
+77 queries.

@@ -26,3 +26,52 @@
 {"repo": "express", "query": "createApplication", "type": "identifier", "relevant": [{"path": "lib/express.js"}]}
 {"repo": "express", "query": "generate an etag header for the response", "type": "conceptual", "relevant": [{"path": "lib/utils.js"}, {"path": "lib/response.js"}]}
 {"repo": "express", "query": "how does the trust proxy setting work", "type": "conceptual", "relevant": [{"path": "lib/application.js"}, {"path": "lib/utils.js"}]}
+{"repo": "gio", "query": "how are two ranked result lists merged into one", "type": "conceptual", "relevant": [{"path": "scripts/retrieval_lib.py", "symbols": ["rrf_fuse"]}]}
+{"repo": "gio", "query": "split snake_case and CamelCase identifiers into subtokens for search", "type": "conceptual", "relevant": [{"path": "scripts/retrieval_lib.py", "symbols": ["tokenize"]}]}
+{"repo": "gio", "query": "where is BM25 relevance scoring implemented", "type": "conceptual", "relevant": [{"path": "scripts/retrieval_lib.py", "symbols": ["BM25Index"]}]}
+{"repo": "gio", "query": "rank code files above tests and documentation", "type": "conceptual", "relevant": [{"path": "scripts/retrieval_lib.py", "symbols": ["rank_prior"]}]}
+{"repo": "gio", "query": "detect whether a query is an exact code identifier", "type": "conceptual", "relevant": [{"path": "scripts/retrieval_lib.py", "symbols": ["is_identifier_query"]}]}
+{"repo": "gio", "query": "chunk a source file at function and class boundaries", "type": "conceptual", "relevant": [{"path": "scripts/retrieval_lib.py", "symbols": ["chunk_file"]}]}
+{"repo": "gio", "query": "stop two index builds from writing at the same time", "type": "conceptual", "relevant": [{"path": "scripts/retrieval_lib.py", "symbols": ["acquire_lock"]}]}
+{"repo": "gio", "query": "fall back to lexical search when embeddings are unavailable", "type": "cross-file", "relevant": [{"path": "scripts/retrieve.py", "symbols": ["run_query"]}, {"path": "scripts/retrieval_lib.py"}]}
+{"repo": "gio", "query": "surface related past decisions before starting a task", "type": "conceptual", "relevant": [{"path": "scripts/retrieve.py", "symbols": ["run_decisions"]}]}
+{"repo": "gio", "query": "detect the best Claude model the account has used", "type": "conceptual", "relevant": [{"path": "scripts/model_router.py", "symbols": ["gather_evidence"]}]}
+{"repo": "gio", "query": "map a model id to its family like opus or haiku", "type": "conceptual", "relevant": [{"path": "scripts/model_router.py", "symbols": ["family_of"]}]}
+{"repo": "gio", "query": "rrf_fuse", "type": "identifier", "relevant": [{"path": "scripts/retrieval_lib.py", "symbols": ["rrf_fuse"]}]}
+{"repo": "gio", "query": "only re-embed files whose contents changed since last index", "type": "conceptual", "relevant": [{"path": "scripts/index.py", "symbols": ["build"]}]}
+{"repo": "gio", "query": "estimate tokens avoided by returning spans instead of whole files", "type": "conceptual", "relevant": [{"path": "scripts/impact.py", "symbols": ["retrieval_savings"]}]}
+{"repo": "gio", "query": "which model tier should do planning versus mechanical edits", "type": "cross-file", "relevant": [{"path": "scripts/model_router.py", "symbols": ["recommend"]}, {"path": "SKILL.md"}]}
+{"repo": "click", "query": "ask the user to confirm with yes or no", "type": "conceptual", "relevant": [{"path": "src/click/termui.py", "symbols": ["confirm"]}]}
+{"repo": "click", "query": "hide typed input when prompting for a password", "type": "conceptual", "relevant": [{"path": "src/click/termui.py", "symbols": ["prompt", "hidden_prompt_func"]}]}
+{"repo": "click", "query": "page long output through a pager like less", "type": "conceptual", "relevant": [{"path": "src/click/termui.py", "symbols": ["echo_via_pager"]}]}
+{"repo": "click", "query": "apply ANSI color and style codes to text", "type": "conceptual", "relevant": [{"path": "src/click/termui.py", "symbols": ["style"]}]}
+{"repo": "click", "query": "raise an error for an invalid parameter value", "type": "conceptual", "relevant": [{"path": "src/click/exceptions.py", "symbols": ["BadParameter"]}]}
+{"repo": "click", "query": "error when an option name is not recognized", "type": "conceptual", "relevant": [{"path": "src/click/exceptions.py", "symbols": ["NoSuchOption"]}]}
+{"repo": "click", "query": "abort execution when the user cancels", "type": "conceptual", "relevant": [{"path": "src/click/exceptions.py", "symbols": ["Abort"]}]}
+{"repo": "click", "query": "wrap help text to the terminal width", "type": "conceptual", "relevant": [{"path": "src/click/formatting.py", "symbols": ["wrap_text", "HelpFormatter"]}]}
+{"repo": "click", "query": "find the OS-specific application config directory", "type": "conceptual", "relevant": [{"path": "src/click/utils.py", "symbols": ["get_app_dir"]}]}
+{"repo": "click", "query": "open a file lazily only when first accessed", "type": "conceptual", "relevant": [{"path": "src/click/utils.py", "symbols": ["LazyFile"]}]}
+{"repo": "click", "query": "split a command line string into argument tokens", "type": "conceptual", "relevant": [{"path": "src/click/parser.py", "symbols": ["split_arg_string"]}]}
+{"repo": "click", "query": "the object holding the currently running command state", "type": "conceptual", "relevant": [{"path": "src/click/core.py", "symbols": ["Context"]}]}
+{"repo": "click", "query": "get the currently active click context", "type": "conceptual", "relevant": [{"path": "src/click/globals.py", "symbols": ["get_current_context"]}]}
+{"repo": "click", "query": "restrict a value to a fixed set of choices", "type": "conceptual", "relevant": [{"path": "src/click/types.py", "symbols": ["Choice"]}]}
+{"repo": "click", "query": "clamp a number into a range instead of raising", "type": "conceptual", "relevant": [{"path": "src/click/types.py", "symbols": ["_NumberRangeBase", "IntRange"]}]}
+{"repo": "click", "query": "decorator that passes the context to a command function", "type": "conceptual", "relevant": [{"path": "src/click/decorators.py", "symbols": ["pass_context"]}]}
+{"repo": "click", "query": "HelpFormatter", "type": "identifier", "relevant": [{"path": "src/click/formatting.py", "symbols": ["HelpFormatter"]}]}
+{"repo": "express", "query": "set a configuration setting on the app", "type": "conceptual", "relevant": [{"path": "lib/application.js"}]}
+{"repo": "express", "query": "register a template engine for a file extension", "type": "conceptual", "relevant": [{"path": "lib/application.js"}]}
+{"repo": "express", "query": "add middleware that runs for a named route parameter", "type": "cross-file", "relevant": [{"path": "lib/application.js"}, {"path": "lib/router/index.js"}]}
+{"repo": "express", "query": "read a header value from the request", "type": "conceptual", "relevant": [{"path": "lib/request.js"}]}
+{"repo": "express", "query": "check whether the request body is a given content type", "type": "conceptual", "relevant": [{"path": "lib/request.js"}]}
+{"repo": "express", "query": "parse the Range header for partial content requests", "type": "conceptual", "relevant": [{"path": "lib/request.js"}]}
+{"repo": "express", "query": "redirect the client to another url", "type": "conceptual", "relevant": [{"path": "lib/response.js"}]}
+{"repo": "express", "query": "set a cookie on the response", "type": "conceptual", "relevant": [{"path": "lib/response.js"}]}
+{"repo": "express", "query": "send a file to the browser as a download", "type": "conceptual", "relevant": [{"path": "lib/response.js"}]}
+{"repo": "express", "query": "respond differently depending on the Accept header", "type": "cross-file", "relevant": [{"path": "lib/response.js"}, {"path": "lib/request.js"}]}
+{"repo": "express", "query": "set the Content-Type of the response", "type": "conceptual", "relevant": [{"path": "lib/response.js"}]}
+{"repo": "express", "query": "generate a weak or strong etag for a response body", "type": "conceptual", "relevant": [{"path": "lib/utils.js"}]}
+{"repo": "express", "query": "compile the trust proxy setting into a function", "type": "conceptual", "relevant": [{"path": "lib/utils.js"}]}
+{"repo": "express", "query": "locate and load a view template file on disk", "type": "conceptual", "relevant": [{"path": "lib/view.js"}]}
+{"repo": "express", "query": "dispatch a matched route through its handler stack", "type": "conceptual", "relevant": [{"path": "lib/router/route.js"}]}
+{"repo": "express", "query": "decide whether a layer matches the request path", "type": "conceptual", "relevant": [{"path": "lib/router/layer.js"}]}
+{"repo": "express", "query": "process_params", "type": "identifier", "relevant": [{"path": "lib/router/index.js"}]}
