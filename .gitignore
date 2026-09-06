@@ -20,3 +20,10 @@ bench/REPORT.md
 bench/SELF_REPORT.md
 GIO_SELF_REPORT.md
 GIO_SAVINGS.html
+
+# CI gate report (regenerable; run bench/ci_gate.py --report)
+retrieval-report.md
+
+# promptfoo local runs
+.promptfoo/
+node_modules/
