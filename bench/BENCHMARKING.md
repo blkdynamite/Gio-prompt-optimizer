@@ -57,7 +57,7 @@ a projected dollar figure, written to a shareable `GIO_SELF_REPORT.md` (and, wit
 `--with-usage` for real savings from the user's own Claude Code logs.
 
 **Repo size matters:** below ~2–4k LOC the whole repo is cheap to read (modest
-absolute savings); the sweet spot is **~10k–200k LOC** (~5–18× fewer tokens); above
+absolute savings); the sweet spot is **~10k–200k LOC** (measured 2026-09-06: 13.6× on click 8.1.7, 9.8× on fastapi 0.115.0); above
 ~750k–2M LOC Gio hits its 50k-chunk index cap and truncates.
 
 ---
