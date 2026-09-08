@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gio — make every Claude Code token count</title>
+<title>Gio — the exact lines, not the whole file</title>
 <meta name="description" content="Gio is a free, open-source Claude Code plugin that finds the exact lines a task needs instead of reading whole files. Measured 6–14× fewer input tokens. Runs locally, no API key.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Gio — make every Claude Code token count">
-<meta property="og:description" content="Free, open-source Claude Code plugin. 13.6× fewer input tokens on Click, 9.8× on FastAPI. Runs locally, no API key.">
+<meta property="og:title" content="Gio — Claude Code plugin: the exact lines, not the whole file">
+<meta property="og:description" content="A free Claude Code plugin that indexes your repo and hands Claude file:line spans instead of whole files. Measured 6–14× fewer input tokens. Zero config, no API key, nothing leaves your machine.">
 <meta property="og:image" content="/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <style>
@@ -56,6 +56,11 @@ h1 { font-size: clamp(34px, 5.4vw, 58px); line-height: 1.06; letter-spacing: -.0
   font-weight: 600; cursor: pointer; background: var(--accent); color: var(--accent-ink);
 }
 .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--hair); }
+.btn.big { padding: 13px 20px; font-size: 16px; }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 22px; }
+.cta a.btn { text-decoration: none; display: inline-flex; align-items: center; }
+.install.flash { outline: 2px solid var(--accent); outline-offset: 2px; }
+.who { font-size: 15px; color: var(--muted); margin: 10px 0 0; max-width: 60ch; }
 .btn:focus-visible { outline: 2px solid var(--gio); outline-offset: 2px; }
 .hero .links { margin-top: 14px; font-size: 15px; color: var(--muted); }
 .hero .links a { color: var(--ink2); }
@@ -119,16 +124,22 @@ footer a { color: var(--ink2); }
 
   <main>
     <section class="hero" style="border-top:0">
-      <p class="kicker">Free · open source · Claude Code plugin</p>
-      <h1>Make every Claude Code token count.</h1>
-      <p class="lede">Every session has a budget. Gio finds the exact lines a task needs instead of reading whole files, hands big lookups to helper agents, and keeps your context small — so a capped session gets more done and your bill shrinks.</p>
+      <p class="kicker">Free, open-source Claude Code plugin</p>
+      <h1>Claude Code reads whole files. Gio hands it the exact lines.</h1>
+      <p class="lede">Gio is a plugin, not a proxy: a skill plus a few local Python scripts. It indexes your repo, turns each question into <code>file:line</code> spans, and tells Claude to read only those. Result on real repos: <b>6–14× fewer input tokens</b> per task, same model, no API key, nothing leaves your machine.</p>
+
+      <div class="cta">
+        <button class="btn big" id="cta-install" type="button">Install in Claude Code</button>
+        <a class="btn ghost big" href="https://github.com/blkdynamite/Gio-prompt-optimizer">View on GitHub</a>
+      </div>
 
       <div class="install" id="install">
         <pre><code>/plugin marketplace add blkdynamite/Gio-prompt-optimizer
 /plugin install gio@blkdynamite-plugins</code></pre>
         <button class="btn" id="copy" type="button" data-copy="/plugin marketplace add blkdynamite/Gio-prompt-optimizer&#10;/plugin install gio@blkdynamite-plugins">Copy</button>
       </div>
-      <p class="links">Paste inside Claude Code. Nothing leaves your machine, no API key, no account. <a href="https://github.com/blkdynamite/Gio-prompt-optimizer#install-2-minutes">Manual install</a> · <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/CHANGELOG.md">v0.4.0</a></p>
+      <p class="links">Two commands, zero config. Paste them inside Claude Code; the index builds itself on first use. <a href="https://github.com/blkdynamite/Gio-prompt-optimizer#install-2-minutes">Manual install</a> · <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/CHANGELOG.md">v0.4.0</a></p>
+      <p class="who">Built for developers on Pro and Max plans who keep hitting the session cap, and for anyone paying per token on a codebase bigger than a weekend project.</p>
 
       <div class="proofline" aria-label="Headline measurements">
         <span><b>13.6×</b> fewer input tokens on Click</span>
@@ -243,6 +254,15 @@ footer a { color: var(--ink2); }
 <script>
 (function () {
   var copy = document.getElementById('copy');
+  var cta = document.getElementById('cta-install');
+  var box = document.getElementById('install');
+  cta.addEventListener('click', function () {
+    copy.click();
+    box.classList.add('flash'); setTimeout(function () { box.classList.remove('flash'); }, 1800);
+    box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    cta.textContent = 'Command copied — paste it in Claude Code';
+    setTimeout(function () { cta.textContent = 'Install in Claude Code'; }, 2600);
+  });
   copy.addEventListener('click', function () {
     var text = copy.getAttribute('data-copy');
     var done = function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy'; }, 1600); };
