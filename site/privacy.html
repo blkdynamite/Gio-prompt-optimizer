@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gio — privacy</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://gio-prompt-optimizer.vercel.app/privacy">
+<style>
+:root { --plane:#f9f9f7; --ink:#0b0b0b; --ink2:#4d4c48; --muted:#7d7b75; color-scheme: light dark; }
+@media (prefers-color-scheme: dark) { :root { --plane:#0d0d0d; --ink:#f4f4f0; --ink2:#c3c2b7; --muted:#8d8b84; } }
+body { margin:0; background:var(--plane); color:var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height:1.6; font-size:17px; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 40px 22px 64px; }
+h1 { font-size: 30px; letter-spacing: -.015em; margin: 0 0 6px; }
+h2 { font-size: 19px; margin: 30px 0 8px; }
+p, li { color: var(--ink2); }
+a { color: var(--ink); }
+.muted { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p><a href="/">← Gio</a></p>
+  <h1>Privacy</h1>
+  <p class="muted">Last updated 2026-09-08. Plain language, not legal boilerplate.</p>
+
+  <h2>The plugin</h2>
+  <p>Gio runs on your machine. It reads your project files and the usage logs Claude Code already keeps under <code>~/.claude/</code>. It sends nothing anywhere: no telemetry, no account, no analytics. The only optional network access is a one-time embedding model download if you install the semantic extras, and cloning two public repositories if you run the retrieval eval.</p>
+
+  <h2>This website</h2>
+  <p>The site is static and sets no cookies. Vercel, which hosts it, keeps standard request logs (IP address, user agent, time) for a short period as part of serving the page.</p>
+
+  <h2>The notify-me form</h2>
+  <ul>
+    <li><b>What we collect:</b> the email address you type, the time, and a keyed hash of your IP address used only to limit abuse. The raw IP address is not stored.</li>
+    <li><b>Why:</b> to send you one message when the team tier ships. Nothing else.</li>
+    <li><b>Where:</b> a database hosted by Supabase in the United States, reachable only by the site's own server function and the maintainer.</li>
+    <li><b>Sharing:</b> none. The list is not sold, rented, or shared.</li>
+    <li><b>Removing your address:</b> open an issue or discussion at <a href="https://github.com/blkdynamite/Gio-prompt-optimizer">github.com/blkdynamite/Gio-prompt-optimizer</a>, or reply to the one email we send, and it will be deleted.</li>
+  </ul>
+
+  <h2>Contact</h2>
+  <p>Questions go to the GitHub repository above. Gio is an independent open-source project and is not affiliated with Anthropic.</p>
+</div>
+</body>
+</html>

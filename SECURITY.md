@@ -8,8 +8,10 @@
   index time if you install the semantic extras, and `git clone` of two pinned
   public repos when you run the retrieval eval. The default lexical path makes
   no network calls.
-- The landing page under `site/` is static. Its notify-me form posts an email
-  address to Klaviyo's public subscribe endpoint and nothing else.
+- The landing page under `site/` is static. Its notify-me form posts to the
+  site's own serverless function (`site/api/signup.js`), which rate-limits by
+  a keyed hash of the caller IP and forwards the email to an insert-only
+  database function. No third-party keys are present in the page.
 
 ## Reporting a vulnerability
 
