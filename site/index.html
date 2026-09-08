@@ -9,7 +9,9 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Gio — Claude Code plugin: the exact lines, not the whole file">
 <meta property="og:description" content="A free Claude Code plugin that indexes your repo and hands Claude file:line spans instead of whole files. Measured 6–14× fewer input tokens. Zero config, no API key, nothing leaves your machine.">
-<meta property="og:image" content="/og.png">
+<link rel="canonical" href="https://gio-prompt-optimizer.vercel.app/">
+<meta property="og:url" content="https://gio-prompt-optimizer.vercel.app/">
+<meta property="og:image" content="https://gio-prompt-optimizer.vercel.app/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <style>
 :root {
@@ -140,6 +142,7 @@ footer a { color: var(--ink2); }
       </div>
       <p class="links">Two commands, zero config. Paste them inside Claude Code; the index builds itself on first use. <a href="https://github.com/blkdynamite/Gio-prompt-optimizer#install-2-minutes">Manual install</a> · <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/CHANGELOG.md">v0.4.0</a></p>
       <p class="who">Built for developers on Pro and Max plans who keep hitting the session cap, and for anyone paying per token on a codebase bigger than a weekend project.</p>
+      <p class="who">Index wrong? Gio reads every returned span to verify it before acting, and falls back to plain grep and whole-file reads when it doesn’t match. Say “read the whole file” and Claude will. Nothing is ever blocked.</p>
 
       <div class="proofline" aria-label="Headline measurements">
         <span><b>13.6×</b> fewer input tokens on Click</span>
@@ -215,6 +218,10 @@ footer a { color: var(--ink2); }
         <div class="card">
           <h3>See what you saved</h3>
           <p>Ask <em>“how much have I saved?”</em> and Gio reports real spend from your logs plus an estimated saving versus a whole-file workflow, clearly labeled as an estimate.</p>
+        </div>
+        <div class="card">
+          <h3>When the index is wrong</h3>
+          <p>Retrieval is a pointer, never the source of truth. Gio reads the span it found to confirm it before acting; if the code moved or the hit looks off, it falls back to grep and whole-file reads and rebuilds the index. You can override at any time by telling Claude to read the file. Gio is a playbook, not a gate.</p>
         </div>
         <div class="card">
           <h3>MIT licensed</h3>

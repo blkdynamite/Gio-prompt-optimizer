@@ -1,0 +1,33 @@
+name: release
+
+# Publishes a GitHub Release whenever a v* tag is pushed, with notes taken
+# from the matching section of CHANGELOG.md.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract release notes from CHANGELOG.md
+        id: notes
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          awk -v v="$ver" '
+            $0 ~ "^## " v " " { on=1; next }
+            on && /^## / { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "No CHANGELOG.md section for $ver" >&2; exit 1
+          fi
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: "Gio ${{ github.ref_name }}"
+          body_path: notes.md
