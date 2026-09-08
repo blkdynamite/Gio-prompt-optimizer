@@ -283,8 +283,9 @@ footer a { color: var(--ink2); }
     }
   });
 
-  // Klaviyo client-side subscribe. The company id is a public key by design.
-  var COMPANY_ID = 'Vfdr6b', LIST_ID = 'W3Cp9K';
+  // Notify-me form -> Supabase RPC. The publishable key is public by design;
+  // the function is insert-only and the table is not readable from the browser.
+  var SB_URL = 'https://isvgkmrgoxysyflkyyyg.supabase.co', SB_KEY = 'sb_publishable_kHme_nFZe8e40iPcSVKvZw_f_n8onTP';
   var form = document.getElementById('notify-form');
   var input = document.getElementById('email');
   var btn = document.getElementById('notify-btn');
@@ -295,15 +296,12 @@ footer a { color: var(--ink2); }
     msg.className = 'msg';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Please enter a valid email address.'; msg.className = 'msg err'; input.focus(); return; }
     btn.disabled = true; btn.textContent = 'Sending…';
-    var body = { data: { type: 'subscription', attributes: {
-      custom_source: 'gio landing page',
-      profile: { data: { type: 'profile', attributes: { email: email } } } },
-      relationships: { list: { data: { type: 'list', id: LIST_ID } } } } };
-    fetch('https://a.klaviyo.com/client/subscriptions/?company_id=' + COMPANY_ID, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'revision': '2024-10-15' },
-      body: JSON.stringify(body)
+    fetch(SB_URL + '/rest/v1/rpc/gio_signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ p_email: email, p_source: 'landing' })
     }).then(function (r) {
-      if (r.status === 202 || r.ok) { msg.textContent = 'Thanks — you’re on the list.'; msg.className = 'msg ok'; input.value = ''; }
+      if (r.ok) { msg.textContent = 'Thanks — you’re on the list.'; msg.className = 'msg ok'; input.value = ''; }
       else { throw new Error('status ' + r.status); }
     }).catch(function () {
       msg.textContent = 'Something went wrong. Star the repo on GitHub and watch releases instead.'; msg.className = 'msg err';

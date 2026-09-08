@@ -23,7 +23,8 @@ First public release.
 - **CI:** unit tests run on every push and PR; pinned eval repos are cached;
   concurrent runs on the same ref are cancelled.
 - **Repo:** `CONTRIBUTING.md`, `SECURITY.md`, named copyright holder, landing
-  page under `site/`.
+  page under `site/` (live at gio-prompt-optimizer.vercel.app; notify-me form
+  stores emails in Supabase), tag-triggered release workflow.
 
 ## 0.3.0 — 2026-07-27
 
