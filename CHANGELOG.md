@@ -24,7 +24,8 @@ First public release.
   concurrent runs on the same ref are cancelled.
 - **Repo:** `CONTRIBUTING.md`, `SECURITY.md`, named copyright holder, landing
   page under `site/` (live at gio-prompt-optimizer.vercel.app; notify-me form
-  stores emails in Supabase), tag-triggered release workflow.
+  posts to a same-origin, rate-limited serverless endpoint that stores emails
+  in Supabase; privacy page at /privacy), tag-triggered release workflow.
 
 ## 0.3.0 — 2026-07-27
 
