@@ -234,7 +234,7 @@ footer a { color: var(--ink2); }
       <div class="notify">
         <div>
           <h2 style="font-size:24px">Gio for teams is next</h2>
-          <p class="sub" style="margin:0">One savings dashboard across every developer on your Claude bill, shared indexes for big monorepos, and a savings report your manager can read. Leave an email and you’ll get one message when it ships.</p>
+          <p class="sub" style="margin:0">One savings dashboard across every developer on your Claude bill, shared indexes for big monorepos, and a savings report your manager can read. Leave an email and you’ll get one message when it ships. <a href="/privacy">Privacy</a>.</p>
         </div>
         <form id="notify-form" novalidate>
           <label class="sr" for="email">Email address</label>
@@ -253,6 +253,7 @@ footer a { color: var(--ink2); }
       <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/eval/RESULTS.md">Eval results</a>
       <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/SECURITY.md">Security</a>
       <a href="https://github.com/blkdynamite/Gio-prompt-optimizer/blob/main/LICENSE">MIT license</a>
+      <a href="/privacy">Privacy</a>
     </div>
     <p style="margin:0">Gio is an independent open-source project and is not affiliated with or endorsed by Anthropic. “Claude” and “Claude Code” are trademarks of Anthropic, PBC.</p>
   </footer>
@@ -283,9 +284,9 @@ footer a { color: var(--ink2); }
     }
   });
 
-  // Notify-me form -> Supabase RPC. The publishable key is public by design;
-  // the function is insert-only and the table is not readable from the browser.
-  var SB_URL = 'https://isvgkmrgoxysyflkyyyg.supabase.co', SB_KEY = 'sb_publishable_kHme_nFZe8e40iPcSVKvZw_f_n8onTP';
+  // Notify-me form -> same-origin endpoint (site/api/signup.js). No third-party
+  // keys in the page; the server function rate-limits and forwards to the DB.
+  var SIGNUP_URL = '/api/signup';
   var form = document.getElementById('notify-form');
   var input = document.getElementById('email');
   var btn = document.getElementById('notify-btn');
@@ -296,12 +297,13 @@ footer a { color: var(--ink2); }
     msg.className = 'msg';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.textContent = 'Please enter a valid email address.'; msg.className = 'msg err'; input.focus(); return; }
     btn.disabled = true; btn.textContent = 'Sending…';
-    fetch(SB_URL + '/rest/v1/rpc/gio_signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
-      body: JSON.stringify({ p_email: email, p_source: 'landing' })
+    fetch(SIGNUP_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
     }).then(function (r) {
       if (r.ok) { msg.textContent = 'Thanks — you’re on the list.'; msg.className = 'msg ok'; input.value = ''; }
+      else if (r.status === 429) { msg.textContent = 'Too many sign-ups from this network right now. Try again in an hour.'; msg.className = 'msg err'; }
+      else if (r.status === 400) { msg.textContent = 'Please enter a valid email address.'; msg.className = 'msg err'; }
       else { throw new Error('status ' + r.status); }
     }).catch(function () {
       msg.textContent = 'Something went wrong. Star the repo on GitHub and watch releases instead.'; msg.className = 'msg err';
