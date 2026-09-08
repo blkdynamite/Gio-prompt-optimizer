@@ -1,11 +1,19 @@
 name: release
 
-# Publishes a GitHub Release whenever a v* tag is pushed, with notes taken
-# from the matching section of CHANGELOG.md.
+# Publishes a GitHub Release with notes taken from the matching section of
+# CHANGELOG.md. Two ways to trigger it:
+#   - push a v* tag, or
+#   - run it manually (workflow_dispatch) with the tag to create; the tag is
+#     then created on `main` by the release step.
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release, e.g. v0.4.0 (must match a CHANGELOG.md section)"
+        required: true
 
 permissions:
   contents: write
@@ -15,10 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Extract release notes from CHANGELOG.md
+      - name: Resolve tag and extract release notes from CHANGELOG.md
         id: notes
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
         run: |
-          ver="${GITHUB_REF_NAME#v}"
+          tag="${INPUT_TAG:-$GITHUB_REF_NAME}"
+          case "$tag" in v*) ;; *) echo "tag must start with v: $tag" >&2; exit 1;; esac
+          ver="${tag#v}"
           awk -v v="$ver" '
             $0 ~ "^## " v " " { on=1; next }
             on && /^## / { exit }
@@ -27,7 +39,10 @@ jobs:
           if [ ! -s notes.md ]; then
             echo "No CHANGELOG.md section for $ver" >&2; exit 1
           fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - uses: softprops/action-gh-release@v2
         with:
-          name: "Gio ${{ github.ref_name }}"
+          tag_name: ${{ steps.notes.outputs.tag }}
+          target_commitish: main
+          name: "Gio ${{ steps.notes.outputs.tag }}"
           body_path: notes.md
