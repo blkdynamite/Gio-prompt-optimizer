@@ -151,8 +151,9 @@ Date: 2026-09-06  ·  Status: Accepted
 Context: Gio was private with zero installs. A $5 one-time paywall on the
 plugin was considered as the launch model.
 Decision: Make the repo public and keep the plugin free under MIT. Use a static
-landing page (site/, Vercel) as the discovery funnel, with an email list
-(Klaviyo, list "Gio launch — notify me") for a future team tier. Lead every
+landing page (site/, Vercel) as the discovery funnel, with an email list for
+a future team tier (Supabase table `gio.launch_signups` behind an insert-only
+RPC; Klaviyo was used for one day and dropped to keep the stack in one place). Lead every
 public claim with a number that reproduces from a script in the repo
 (bench/self_benchmark.py, scripts/eval_retrieval.py) and state its caveat next
 to it. Address all bundled scripts via ${CLAUDE_PLUGIN_ROOT} so the plugin

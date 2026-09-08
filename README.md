@@ -24,7 +24,7 @@ checks the work before it ships.
 on real coding tasks run with and without Gio. Details and caveats below;
 everything reproduces on your machine with no API key.
 
-Landing page source lives in [`site/`](site/) (static, deploys to Vercel as-is).
+Website: [gio-prompt-optimizer.vercel.app](https://gio-prompt-optimizer.vercel.app) (source in [`site/`](site/)).
 
 ---
 
@@ -188,6 +188,12 @@ python3 scripts/retrieve.py "where are savings estimated"
 pip install -r scripts/requirements-semantic.txt
 python3 scripts/index.py
 ```
+
+**When retrieval misses:** results are pointers, never the source of truth.
+Gio reads the returned span to confirm it before acting, and falls back to
+grep and whole-file reads when the span doesn't match (the map-then-verify
+protocol in [`references/codebase-map.md`](references/codebase-map.md)). You
+can always tell Claude to read the whole file; nothing is blocked.
 
 **Privacy:** embedding models run locally; code and queries never leave your
 machine. The only network access is a one-time model download at *index*

@@ -6,7 +6,7 @@
   "author": {
     "name": "blkdynamite"
   },
-  "homepage": "https://github.com/blkdynamite/Gio-prompt-optimizer",
+  "homepage": "https://gio-prompt-optimizer.vercel.app",
   "repository": "https://github.com/blkdynamite/Gio-prompt-optimizer",
   "license": "MIT",
   "keywords": ["tokens", "cost", "retrieval", "embeddings", "code-review", "sustainability"]
