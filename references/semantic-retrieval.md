@@ -16,10 +16,10 @@ identifier (`snake_case`, `CamelCase`, a quoted string, `a.method()`).
 
 ## The decision rule for the agent
 
-1. **Exact symbol name known** → `python3 scripts/codebase_map.py --find NAME`
+1. **Exact symbol name known** → `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/codebase_map.py" --find NAME`
    (cheapest: one line out).
 2. **Conceptual question** ("where is retry handled", "what parses the
-   config") → `python3 scripts/retrieve.py "..."` and Read only the returned
+   config") → `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/retrieve.py" "..."` and Read only the returned
    spans.
 3. **Result looks off, or retrieval degrades** → fall back to Part 1A
    grep/glob discipline. Retrieval is a pointer, never the source of truth —
@@ -48,7 +48,7 @@ identifier (`snake_case`, `CamelCase`, a quoted string, `a.method()`).
   | `hash` | built-in | numpy only | deterministic; tests/CI only, not semantic |
 
   The shipped default is the *eval-decided* winner among what's installed —
-  run `scripts/eval_retrieval.py --backends model2vec,fastembed,st` on your
+  run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/eval_retrieval.py" --backends model2vec,fastembed,st` on your
   own repos to see the trade-off in numbers before switching.
 - **Storage**: a numpy matrix + brute-force cosine in `.gio/index/`
   (gitignored, always safe to delete). Deliberately **no vector database** —

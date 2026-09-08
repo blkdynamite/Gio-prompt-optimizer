@@ -192,10 +192,12 @@ def main(argv=None):
                    help="Model id for the projected-$ estimate (default sonnet).")
     p.add_argument("--with-usage", action="store_true",
                    help="Also run scripts/impact.py for real-session savings.")
-    p.add_argument("--out", default=str(REPO_ROOT / "bench" / "SELF_REPORT.md"),
-                   help="Where to write the shareable markdown report.")
-    p.add_argument("--html",
-                   help="Also write a self-contained HTML savings dashboard here.")
+    p.add_argument("--out", default="GIO_SELF_REPORT.md",
+                   help="Where to write the shareable markdown report "
+                        "(default: GIO_SELF_REPORT.md in the current directory).")
+    p.add_argument("--html", nargs="?", const="GIO_SAVINGS.html", default=None,
+                   help="Also write a self-contained HTML savings dashboard "
+                        "(default path when given bare: GIO_SAVINGS.html).")
     args = p.parse_args(argv)
 
     root = Path(args.root).expanduser().resolve()

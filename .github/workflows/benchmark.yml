@@ -28,7 +28,22 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Unit tests — stdlib unittest, no installs, seconds to run.
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Unit tests
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
   # Free, deterministic retrieval quality gate — no API keys, no cost.
   retrieval-eval:
     runs-on: ubuntu-latest
@@ -37,6 +52,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Cache pinned eval repos (click, express)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/gio-eval
+          key: gio-eval-repos-${{ hashFiles('eval/repos.json') }}
       - name: Retrieval eval + regression gate (hit@5 >= 0.80)
         run: python3 bench/ci_gate.py --min-hit5 0.80 --report retrieval-report.md
       - name: Upload retrieval report
@@ -121,7 +141,7 @@ jobs:
   # Optional: publish headline metrics to a hosted Braintrust dashboard so
   # non-technical stakeholders can track them over time (metric drift).
   braintrust-publish:
-    needs: [retrieval-eval, guard]
+    needs: [tests, retrieval-eval, guard]
     if: ${{ needs.guard.outputs.has_braintrust == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     steps:

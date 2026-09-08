@@ -115,8 +115,56 @@ docs (rich in query vocabulary) were outranking the implementing code.
 Decision: Multiply both rankers' scores before fusion by a static prior:
 0.7 for test files, 0.9 for markdown, 1.0 for code (`rank_prior` in
 retrieval_lib.py). Restored hit@5 to 83% and improved vector/hybrid too.
+(Percentages in this entry are as measured on the 12-query gio slice of the
+original 28-query set on 2026-07-22; current numbers live in eval/RESULTS.md.)
 Alternatives: Query-intent classification (rejected: complexity without
 evidence it beats a constant); excluding tests entirely (rejected: sometimes
 they are the answer).
 Consequences: Priors are eval-tuned constants; changing them requires
 re-running scripts/eval_retrieval.py and updating eval/RESULTS.md.
+
+## D-0008 — Hybrid retrieval underperforms single-ranker; default to lexical
+Date: 2026-07-23  ·  Status: Accepted (pending 77-query embedding confirmation)
+
+Context: The first eval with real embedding backends (28 queries) showed hybrid
+RRF below the better of its two inputs, contradicting the spec's "hybrid beats
+either alone" thesis. We investigated bug vs noise vs design.
+Decision: Confirmed via code audit + reproduction (references/fusion-analysis.md)
+that rrf_fuse is correct — the shortfall is inherent to equal-weight RRF, which
+rewards agreement over peak confidence and averages a dominant retriever down.
+So: ship a single ranker as the default (lexical BM25 — free, fastest,
+competitive; fastembed as the optional higher-quality backend), keep hybrid
+available behind --mode hybrid but document it as "no measured benefit over the
+best single ranker on our set." Golden set expanded from 28 to 77 queries to
+tighten the estimates; re-run embeddings on Colab before finalizing.
+Alternatives: Per-query fusion weighting (rejected: needs query-intent
+classification, see D-0007); score-based fusion (rejected: needs tuning, see
+D-0005); keep model2vec default (rejected: it was the weakest backend measured).
+Consequences: Supersedes the emphasis in D-0005 on hybrid as the primary path;
+D-0002's default-backend choice is pending the 77-query embedding re-run. Any
+README claim about hybrid or the default backend must cite eval/RESULTS.md at
+77 queries.
+
+## D-0009 — Launch free and open; monetize later with something the files can't provide
+Date: 2026-09-06  ·  Status: Accepted
+
+Context: Gio was private with zero installs. A $5 one-time paywall on the
+plugin was considered as the launch model.
+Decision: Make the repo public and keep the plugin free under MIT. Use a static
+landing page (site/, Vercel) as the discovery funnel, with an email list
+(Klaviyo, list "Gio launch — notify me") for a future team tier. Lead every
+public claim with a number that reproduces from a script in the repo
+(bench/self_benchmark.py, scripts/eval_retrieval.py) and state its caveat next
+to it. Address all bundled scripts via ${CLAUDE_PLUGIN_ROOT} so the plugin
+install is the primary path.
+Alternatives: $5 paywalled download (rejected: MIT files are freely
+redistributable, checkout friction outweighs revenue at zero reach, and a
+paywall on a plugin repels the developers who would share it); tip jar at
+launch (deferred: no monetization links until there is an audience);
+GitHub Pages hosting (rejected in favor of Vercel by the maintainer).
+Consequences: Paid features must be things the files alone cannot do (hosted
+team dashboard, cross-repo savings history, prebuilt indexes for monorepos).
+Any number on the landing page or README must trace to a committed result
+(eval/RESULTS.md, a self-benchmark run) and be refreshed when those change.
+The plugin version must be bumped for every behavior change so installed users
+receive it.

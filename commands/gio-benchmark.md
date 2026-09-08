@@ -36,9 +36,9 @@ Steps:
 
 4. Offer the extras:
    - `--with-usage` adds **real-session savings** computed from their own Claude
-     Code logs (`scripts/impact.py`), still no API key.
+     Code logs (`${CLAUDE_PLUGIN_ROOT}/scripts/impact.py`), still no API key.
    - For labeled retrieval **quality** (hit@1 / hit@5 / MRR), point them at
-     `scripts/eval_retrieval.py` + `eval/golden_queries.jsonl` — that needs
+     `${CLAUDE_PLUGIN_ROOT}/scripts/eval_retrieval.py` + `${CLAUDE_PLUGIN_ROOT}/eval/golden_queries.jsonl` — that needs
      ground-truth labels, so it's a separate power-user path.
 
 Only report numbers the script actually printed — never invent or round-trip
