@@ -27,3 +27,4 @@ retrieval-report.md
 # promptfoo local runs
 .promptfoo/
 node_modules/
+.gio/
