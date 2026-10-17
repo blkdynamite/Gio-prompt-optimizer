@@ -122,9 +122,37 @@ cloned into.
 | 🗺️ **Maps your codebase** | Builds a labeled, regenerable index (`python3 scripts/codebase_map.py`) so it jumps straight to the right file and lines instead of re-scanning the whole project. |
 | 🔎 **Finds code by meaning** | Hybrid semantic search (`python3 scripts/retrieve.py "where is login handled"`) — local embeddings + BM25 find the right code even when your words don't match the code's words, and return exact `file:line` spans to read. |
 | 🎚️ **Routes work to the right model** | `python3 scripts/model_router.py` — plans on the best model you have access to, hands mechanical work to cheaper ones. Report-only, evidence-based, never blocks. |
+| 💾 **Survives auto-compact** | When a long session is about to be summarized by the harness, Gio quietly writes a lean checkpoint (goals, files, decisions, last turns verbatim) and silently restores it on the next session — no commands, no account. Run `/gio-distill` to save one on demand. |
+| 📏 **Nudges away from huge Reads** | A silent `PreToolUse` hook on `Read` emits a non-blocking advisory when the file is bigger than ~100 KB / 1,200 lines, pointing at `retrieve.py` or an offset/limit read. Never prompts, never blocks. |
 
 Each part has a short guide in [`references/`](references/); the full playbook
 Claude follows is in [`SKILL.md`](SKILL.md).
+
+---
+
+## Session distillation — the invisible one
+
+A long session gets expensive not because any single read is big, but because
+*message history* keeps growing. By turn 300 the model is re-reading its own
+tool output on every turn. Eventually the harness auto-compacts — and the
+generic summarizer tends to lose the thread.
+
+Gio handles this without you touching anything:
+
+- A `PreCompact` hook fires right before auto-compact and writes a markdown
+  checkpoint to `.gio/sessions/latest.md`: your goals, the files you touched,
+  the decisions you made, and the last few turns verbatim. Stale `Read`,
+  `Grep` and `Bash` output is dropped (compressed to one line each).
+- A `SessionStart` hook silently injects that checkpoint into your next
+  session's context, so Gio opens already knowing what you were doing.
+- `/gio-distill` saves one on demand (useful before you intentionally
+  `/clear`).
+
+Honors `/clear` (won't resurrect state); expires after 7 days; capped at
+24 KB of injected context. Everything is local — the checkpoint lives inside
+your project (`.gio/sessions/`) and never leaves your machine. See
+[`scripts/distill.py`](scripts/distill.py) for the exact rules on what's
+kept vs. dropped.
 
 ---
 
