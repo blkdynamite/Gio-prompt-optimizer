@@ -4,7 +4,7 @@ All notable changes to Gio. Versions follow the `version` field in
 `.claude-plugin/plugin.json`; bumping it is what delivers updates to installed
 users (`/plugin marketplace update blkdynamite-plugins`).
 
-## 0.5.0 — 2026-10-16
+## 0.5.0 — 2026-10-17
 
 - **New:** session distillation that survives auto-compact. Gio now ships two
   invisible hooks (`PreCompact` and `SessionStart`) plus a manual
@@ -17,6 +17,13 @@ users (`/plugin marketplace update blkdynamite-plugins`).
   [`scripts/distill.py`](scripts/distill.py) for the honest list of what's
   kept vs. dropped. Honors `/clear`; expires checkpoints after 7 days;
   defensively capped at 24 KB of injected context.
+- **New:** `PreToolUse` watchdog on `Read` — silently emits a non-blocking
+  advisory when the file is bigger than ~100 KB / 1,200 lines, pointing at
+  `retrieve.py` or an `offset`/`limit` read. Never blocks, never prompts.
+- **New:** context-bloat metric in `impact.py` — new `CONTEXT BLOAT` section
+  surfaces how much tool-output a window of sessions carried, and flags
+  sessions that reached auto-compact (where Gio's `PreCompact` checkpoint
+  mattered). Rough-but-honest token proxy; also in `--json`.
 - **New:** `scripts/test_distill.py` with golden transcripts.
 
 ## 0.4.0 — 2026-09-06

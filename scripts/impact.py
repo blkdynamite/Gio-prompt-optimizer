@@ -149,6 +149,83 @@ def aggregate(files, since):
     return totals, files_read
 
 
+def bloat_metric(files, since):
+    """Context-bloat accounting across session transcripts in the window.
+
+    Counts the tool-output bytes those sessions carried in context, and flags
+    sessions that reached auto-compact (where Gio's PreCompact checkpoint
+    hook would have saved the useful bits before the harness summarized the
+    rest). Honest-but-rough: bytes/4 is a token proxy, and tool_result bytes
+    are a lower bound on what the model actually re-processed every turn.
+
+    Returns None when no sessions fall in the window.
+    """
+    import time
+
+    window = cutoff_seconds(since)
+    now = time.time()
+    sessions = 0
+    compacted = 0
+    tool_output_bytes = 0
+    tool_results = 0
+
+    for fpath in files:
+        try:
+            if window is not None and (now - os.path.getmtime(fpath)) > window:
+                continue
+        except OSError:
+            continue
+        sessions += 1
+        saw_summary = False
+        try:
+            with open(fpath, "r", encoding="utf-8", errors="ignore") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        rec = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if rec.get("type") == "summary" or rec.get("isCompactSummary"):
+                        saw_summary = True
+                    msg = rec.get("message") or {}
+                    content = msg.get("content") or []
+                    if not isinstance(content, list):
+                        continue
+                    for block in content:
+                        if not isinstance(block, dict):
+                            continue
+                        if block.get("type") != "tool_result":
+                            continue
+                        c = block.get("content")
+                        if isinstance(c, list):
+                            s = "".join(
+                                b.get("text", "") for b in c
+                                if isinstance(b, dict) and b.get("type") == "text"
+                            )
+                        else:
+                            s = str(c or "")
+                        tool_output_bytes += len(s.encode("utf-8"))
+                        tool_results += 1
+        except OSError:
+            continue
+        if saw_summary:
+            compacted += 1
+
+    if sessions == 0:
+        return None
+    tokens = tool_output_bytes // 4
+    return {
+        "sessions": sessions,
+        "compacted_sessions": compacted,
+        "tool_results": tool_results,
+        "tool_output_tokens": tokens,
+        "tool_output_mb": tool_output_bytes / (1024 * 1024),
+        "avg_tool_output_tokens_per_session": tokens // max(1, sessions),
+    }
+
+
 def cost_usd(model, tok):
     inp, out = price_for(model)
     return (
@@ -294,7 +371,7 @@ def fmt_money(x):
 
 
 def human_report(r, files_read, baseline_multiplier, milestone_hit,
-                 retrieval=None):
+                 retrieval=None, bloat=None):
     a = r["actual"]
     s = r["saved"]
     lines = []
@@ -338,6 +415,24 @@ def human_report(r, files_read, baseline_multiplier, milestone_hit,
         lines.append(f"    Whole files     : {retrieval['whole_file_tokens']:,} tokens")
         lines.append(f"    Avoided reading : {retrieval['tokens_avoided']:,} tokens "
                      f"(~{fmt_money(retrieval['est_cost_avoided'])})")
+    if bloat:
+        lines.append("")
+        lines.append(f"  CONTEXT BLOAT ({bloat['sessions']} session(s) scanned)")
+        lines.append("    (bytes/4 token proxy; lower bound — tool_result bytes")
+        lines.append("     only, not full re-processed context per turn)")
+        lines.append(f"    Tool outputs    : {bloat['tool_results']:,} across "
+                     f"{bloat['sessions']} session(s)")
+        lines.append(f"    Carried tokens  : ~{bloat['tool_output_tokens']:,} total "
+                     f"({bloat['tool_output_mb']:.1f} MB)")
+        lines.append(f"    Avg per session : ~{bloat['avg_tool_output_tokens_per_session']:,} tokens")
+        if bloat['compacted_sessions']:
+            lines.append(
+                f"    Hit auto-compact: {bloat['compacted_sessions']} session(s) — "
+                "Gio's PreCompact hook writes a checkpoint before these so the next "
+                "session resumes with intent + files + decisions intact")
+        else:
+            lines.append("    Hit auto-compact: 0 (none reached the harness summarizer "
+                         "in this window)")
     if milestone_hit is not None:
         lines.append("")
         lines.append("  " + "*" * 56)
@@ -403,6 +498,7 @@ def main(argv=None):
 
     retrieval = retrieval_savings(
         Path(os.path.expanduser(args.repo_root)).resolve(), args.since)
+    bloat = bloat_metric(files, args.since)
 
     if args.json:
         out = dict(r)
@@ -410,10 +506,11 @@ def main(argv=None):
         out["baseline_multiplier"] = args.baseline_multiplier
         out["milestone_hit"] = milestone_hit
         out["retrieval"] = retrieval
+        out["bloat"] = bloat
         print(json.dumps(out, indent=2))
     else:
         print(human_report(r, files_read, args.baseline_multiplier,
-                           milestone_hit, retrieval))
+                           milestone_hit, retrieval, bloat))
     return 0
 
 

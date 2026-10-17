@@ -123,6 +123,7 @@ cloned into.
 | 🔎 **Finds code by meaning** | Hybrid semantic search (`python3 scripts/retrieve.py "where is login handled"`) — local embeddings + BM25 find the right code even when your words don't match the code's words, and return exact `file:line` spans to read. |
 | 🎚️ **Routes work to the right model** | `python3 scripts/model_router.py` — plans on the best model you have access to, hands mechanical work to cheaper ones. Report-only, evidence-based, never blocks. |
 | 💾 **Survives auto-compact** | When a long session is about to be summarized by the harness, Gio quietly writes a lean checkpoint (goals, files, decisions, last turns verbatim) and silently restores it on the next session — no commands, no account. Run `/gio-distill` to save one on demand. |
+| 📏 **Nudges away from huge Reads** | A silent `PreToolUse` hook on `Read` emits a non-blocking advisory when the file is bigger than ~100 KB / 1,200 lines, pointing at `retrieve.py` or an offset/limit read. Never prompts, never blocks. |
 
 Each part has a short guide in [`references/`](references/); the full playbook
 Claude follows is in [`SKILL.md`](SKILL.md).
